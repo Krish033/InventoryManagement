@@ -43,6 +43,8 @@ Route::controller(PurchaseController::class)->group(function () {
     Route::get('/transactions/api/purchase/request-suppliers', 'requestSuppliers')->name('purchase.suppliers'); // category record
 
     Route::post('/transactions/api/purchase/create-record', 'store'); // category record
+    Route::get('/transactions/api/purchase/request-created-products/{tranNo}', 'requestCreatedProducts'); // category record
+    Route::post('//transactions/api/purchase/update-record/{tranNo}', 'update'); // category record
 });
 
 // single action controller -- purchase items

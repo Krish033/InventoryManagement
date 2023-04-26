@@ -161,18 +161,6 @@ const requestTotalInfo = () => {
   return sum;
 };
 
-const appendEditValues = (e, row, tr) => {
-  Object.entries(row).map((item) => {
-    const el = document.querySelector("#" + item[0]);
-    el.value = item[1];
-  });
-
-  // floatable(tr);
-  tr.classList.add("editing");
-  genepriceGrandTotal();
-  return true;
-};
-
 const requestValidatedArray = () => {
   const validateObject = document.querySelector("#createForm");
 

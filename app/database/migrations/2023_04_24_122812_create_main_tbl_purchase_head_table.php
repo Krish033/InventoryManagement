@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('tbl_purchase_head', function (Blueprint $table) {
             $table->string('tranNo')->primary();
-            $table->timestamp('tranDate')->default(now());
+            $table->date('tranDate')->default(now());
             $table->string('invoiceNo', 50);
             $table->string('supplierId', 50);
             $table->string('mop', 50);

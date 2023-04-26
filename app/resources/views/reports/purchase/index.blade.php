@@ -112,15 +112,6 @@
                                 </table>
 
                                 <div class="mt-5">
-                                    {{-- <div class="d-flex justify-content-end">
-                                        <p class="text-muted me-3">Subtotal:</p>
-                                        <span>$390.00</span>
-                                    </div> --}}
-
-                                    {{-- <div class="d-flex justify-content-end mt-3">
-                                        <h5 class="me-3">Total:</h5>
-                                        <h5 class="text-success">$399.99 USD</h5>
-                                    </div> --}}
                                 </div>
                             </div>
                             <a href="#!"

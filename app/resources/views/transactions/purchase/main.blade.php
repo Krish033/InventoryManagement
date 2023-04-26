@@ -63,7 +63,8 @@
             <div class="d-md-flex gap-3">
                 <div class="form-group d-flex" style="flex-direction: column">
                     <label for="" class="mb-0 fs-14">Date</label>
-                    <input class="form-control form-control-sm" id="date" type="date">
+                    <input @if($isEdit) value="{{ $EditData->tranDate }}" @endif class="form-control form-control-sm"
+                        id="date" type="date">
                 </div>
                 <div class="form-group d-flex" style="flex-direction: column">
                     <label for="" class="mb-0 fs-14">Supplier</label>
@@ -74,14 +75,14 @@
                 <div class="form-group d-flex" style="flex-direction: column">
                     <label for="" class="mb-0 fs-14">Payment type</label>
                     <select class="form-control form-control-sm" name="" id="paymentType">
-                        <option value="cash">Cash</option>
-                        <option value="card">Card</option>
+                        <option @if($isEdit && $EditData->mop == 'cash') selected @endif value="cash">Cash</option>
+                        <option @if($isEdit && $EditData->mop == 'card') selected @endif value="card">Card</option>
                     </select>
                 </div>
                 <div class="form-group d-flex" style="flex-direction: column">
                     <label for="" class="mb-0 fs-14">Invoice Number</label>
-                    <input id="ivNo" class="form-control form-control-sm bg-outline-dark" type="text"
-                        placeholder="INV001">
+                    <input id="ivNo" @if($isEdit) value="{{ $EditData->invoiceNo }}" @endif
+                        class="form-control form-control-sm bg-outline-dark" type="text" placeholder="INV001">
                 </div>
             </div>
         </form>
@@ -148,9 +149,7 @@
                     </tr>
                 </thead>
 
-                <tbody id="createTable">
-
-                </tbody>
+                <tbody id="createTable"></tbody>
             </table>
 
             <div class="w-100 d-flex align-items-end mt-5" style="flex-direction: column">
@@ -162,8 +161,9 @@
             </div>
 
             <div class="submitButtons mt-4 w-100 d-flex justify-content-end gap-2">
-                <button class="btn btn-sm btn-outline-dark">Back</button>
-                <button id="createPurchase" class="btn btn-sm btn-outline-success">Add</button>
+                <a href="{{ url()->previous() }}" class="btn btn-sm btn-outline-dark">Back</a>
+                <button id="createPurchase" class="btn btn-sm btn-outline-success">@if(!$isEdit) Add @else Update
+                    @endif</button>
             </div>
         </div>
     </div>
@@ -265,17 +265,77 @@
         return;
     });
 
-    requestItemsFromLocalStorage()
+
+    
+    const appendEditValues = async (e, row, tr) => {
+    Object.entries(row).map((item) => {
+        const el = document.querySelector("#" + item[0]);
+        if (el) {
+        el.value = item[1];
+        }
+    });
+
+    console.log(tr.dataset);
+    //getting and appending categories
+    const { data, isError } = await requestCategories();
+    const categoryId = document.querySelector("#categoryId");
+
+    // caheck error and create error
+    if (isError) return toastr.error("Something went wrong!", "Failed");
+    createSelectOption(categoryId, data, "CID", "CName", tr.dataset.categoryid);
+
+    const subCategoryId = document.querySelector('#subCategoryId');
+    // getting sub categories purchase.subcategory
+    const { data:sub, isError: subError, error } = await requestSubCategories(tr.dataset.categoryid);
+    if(subError) return toastr.error("Something went wrong!", 'Failed');
+    
+    subCategoryId.classList.remove('disabled');
+    createSelectOption(subCategoryId, sub, 'SCID', 'SCName', tr.dataset.subcategoryid)
+
+    const productId = document.querySelector('#productId');
+    const { data: product, isError:productError } = await requestProducts(tr.dataset.subcategoryid);
+    if(productError) return toastr.error("Something went wrong!", 'Failed');
+    // getting sub categories purchase.subcategory
+    productId.classList.remove('disabled');
+    createSelectOption(productId, product, 'pid', 'name', tr.dataset.productid)
+    const quantity = document.querySelector('#quantity');
+    quantity.classList.remove('disabled');
+
+    //getting and appending categories
+    const { data: taxData, isError: isTaxError } = await requestTaxes();
+    if(isTaxError) return toastr.error("Something went wrong!", 'Failed');
+    const taxSelect = document.querySelector('#taxPercentage');
+    createSelectOption(taxSelect, taxData, 'TaxPercentage', 'TaxName', tr.dataset.taxpercentage)
+
+    // floatable(tr);
+    tr.classList.add("editing");
+    genepriceGrandTotal();
+    return true;
+    };
+
+    // requestItemsFromLocalStorage()
     genepriceGrandTotal();
 
     $(document).ready(async () => {
         //getting and appending categories
         const {data: suppliers, isError} = await requestSuppliers();
         const supplierSelect = document.querySelector('#supplierSelect');
-        createSelectOption(supplierSelect, suppliers, 'sid', 'name')
+        createSelectOption(supplierSelect, suppliers, 'sid', 'name', @if($isEdit) "{{ $EditData->supplierId }}" @endif)
     })
 
     $(document).on('click', '#createPurchase', async (e) => {
+
+
+        const swalConfiguration = {
+            title: "Are you sure?",
+            text: "Create this p[urchase!",
+            type: "info",
+            showCancelButton: true,
+            confirmButtonClass: "btn-outline-success",
+            confirmButtonText: "Confrim",
+            closeOnConfirm: true
+        }
+
         e.preventDefault();
         // get values
         let products = [...document.querySelector('#createTable').children].map(item => {
@@ -311,15 +371,41 @@
             balanceAmount: $('#grandTotal').html(),
             products,
         } // send ajax request to post the data
+        const url = @if(!$isEdit) '/transactions/api/purchase/create-record' @else "/transactions/api/purchase/update-record/{{ $EditData->tranNo }}" @endif
 
-        const { data, isError } = await request.http({
-            url: "/transactions/api/purchase/create-record",
-            method: 'POST',
-            data: mainData,
-        });
+        swal(swalConfiguration, async function () {
+            const { data, isError } = await request.http({
+                url,
+                method: 'POST',
+                data: mainData,
+            });
 
-        if(isError) return toastr.error("Something went wrong!", 'Failed');
-        window.location.replace("{{ url('/') }}/transactions/purchase");
+            if(isError) return toastr.error("Something went wrong!", 'Failed');
+            toastr.success("Purchase Made successfully!", 'Success!')
+            window.location.replace("{{ url('/') }}/transactions/purchase");
+        })
+
     })
+
+@if($isEdit)
+
+    const requestCreatedNodes = () => {
+        const tranId = "{{ $EditData->tranNo }}";
+        return request.http({
+            url: "/transactions/api/purchase/request-created-products/" + tranId,
+            method: "GET",
+        });
+    };
+
+    $(document).ready(async () => {
+        const { data, isError } = await requestCreatedNodes();
+        if(isError) return toastr.error("Something went wrong!", 'Failed');
+        // creating the items from the database
+        data?.map(item => {
+            createDOMElement(item);
+        });
+    });
+@endif
 </script>
+
 @endsection

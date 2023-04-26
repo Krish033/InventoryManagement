@@ -117,31 +117,30 @@ class PurchaseController extends Purchase {
     /**
      * Fetch table resource
      */
-    public function homeApi() { // crate api
+    public function homeApi(Request $request) { // crate api
         if (!$this->can('view')) {
             // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
         $columns = [
-            ['db' => 'puid', 'dt' => '0'],
-            ['db' => 'date', 'dt' => '1'],
-            ['db' => 'name', 'dt' => '2'],
-            // is active column
-            ['db' => 'is_active', 'dt' => '3', "formatter" => function ($d, $row) {
-                return $d == '1'
-                    ? "<span class='badge badge-success m-1'>Active</span>"
-                    : "<span class='badge badge-danger m-1'>Inactive</span>";
-            }],
-            // created by
-            ['db' => 'created_by', 'dt' => '4'],
+            ['db' => 'tranNo', 'dt' => '0'],
+            ['db' => 'tranDate', 'dt' => '1'],
+            ['db' => 'supplierId', 'dt' => '2'],
+            ['db' => 'invoiceNo', 'dt' => '3'],
+            ['db' => 'mop', 'dt' => '4'],
+            ['db' => 'taxable', 'dt' => '5'],
+            ['db' => 'taxAmount', 'dt' => '6'],
+            ['db' => 'TotalAmount', 'dt' => '7'],
+            ['db' => 'paidAmount', 'dt' => '8'],
+            ['db' => 'balanceAmount', 'dt' => '9'],
+
             // buttons
             [
-                'db' => 'puid',
-                'dt' => '5',
+                'db' => 'tranNo',
+                'dt' => '10',
                 'formatter' => function ($d, $row) {
-                    $html = '';
-                    // if (boolval($this->can('edit'))) {
-                    $html .= '
+
+                    $html = '
                         <a type="button" 
                             href="' . route('purchase.update', $d) . '" 
                             data-id="' . $d . '" 
@@ -151,20 +150,6 @@ class PurchaseController extends Purchase {
                         >
                             <i class="fa fa-pencil"></i>
                         </a>';
-
-                    $html .= '
-                        <a type="button" 
-                            href="' . route('purchase.item.home', $d) . '" 
-                            data-id="' . $d . '" 
-                            class="btn btn-outline-primary btn-sm -success me-1 viewPurchase" 
-                            id="supplierViewEditBtn" 
-                            data-original-title="Edit"
-                        >
-                            <i class="fa fa-eye"></i>
-                        </a>
-                    ';
-                    // }
-                    // if (boolval($this->can('delete'))) {
                     $html .= '
                         <button 
                             type="button" 
@@ -181,9 +166,9 @@ class PurchaseController extends Purchase {
         ];
 
         return (new ServerSideProcess())->SSP([
-            'POSTDATA' => [],
-            'TABLE' => self::table,
-            'PRIMARYKEY' => self::primaryId,
+            'POSTDATA' => $request,
+            'TABLE' => 'tbl_purchase_head',
+            'PRIMARYKEY' => 'tranNo',
             'COLUMNS' => $columns,
             'COLUMNS1' => $columns,
             'GROUPBY' => null,
@@ -385,7 +370,6 @@ class PurchaseController extends Purchase {
             'isEdit' => false,
         ]);
     }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -393,9 +377,9 @@ class PurchaseController extends Purchase {
         if (!$this->can('add')) {
             // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
-
+        // create doucment number
         $documentNumber = $this->docNum->getDocNum(self::docName);
-
+        // main data to be introduced
         $data = [
             ...$request->except(['products']),
             'tranNo' => $documentNumber,
@@ -403,24 +387,29 @@ class PurchaseController extends Purchase {
             'created_at' => now(),
             'dflag' => false
         ];
+        // start the transactions
+        DB::transaction(function () use ($request, $documentNumber, $data) {
+            // creating purchasedItems
+            collect($request->products)->map(function ($item) use ($documentNumber) {
+                // ! the collection doesnot return anything
+                $itemNumber = $this->docNum->getDocNum('PurchasedItems');
+                // udating data
+                $purchaseData = [
+                    ...$item, // single product
+                    'detailId' => $itemNumber,
+                    'tranNo' => $documentNumber,
+                    'created_at' => now(),
+                ]; // updating docnum
+                $this->docNum->updateDocNum('PurchasedItems'); // updating documnet number
+                LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details');
+            }); // making it a collection to use the map function
 
-        collect($request->products)->map(function ($item) use ($documentNumber) {
-            $itemNumber = $this->docNum->getDocNum('PurchasedItems');
-            $purchaseData = [
-                ...$item,
-                'detailId' => $itemNumber,
-                'tranNo' => $documentNumber,
-                'created_at' => now(),
-            ];
-
-            $this->docNum->updateDocNum('PurchasedItems'); // updating documnet number
-            LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details');
+            // create logs, create Data
+            LogForStoredEvent::dispatch($data, 'tbl_purchase_head');
+            $this->docNum->updateDocNum(self::docName); // updating documnet number
+            DB::commit(); // commiting the database trans -> doesnt required usually, the events contain commit itself
         });
 
-        // create logs, create Data
-        LogForStoredEvent::dispatch($data, 'tbl_purchase_head');
-
-        $this->docNum->updateDocNum(self::docName); // updating documnet number
         return response()->json(['status' => true, 'message' => 'Purchase created Successfully']);
     }
 
@@ -432,7 +421,7 @@ class PurchaseController extends Purchase {
             // abort(401, "Un Authorized");
         }
 
-        return view(self::views . ".create", [
+        return view(self::views . ".main", [
             'UInfo' => $this->general->UserInfo['UInfo'],
             'menus' => $this->menus,
             'crud' => $this->crud,
@@ -440,8 +429,8 @@ class PurchaseController extends Purchase {
             'PageTitle' => $this->pageTitle,
             'isEdit' => true,
 
-            'EditData' => DB::table(self::table)
-                ->where(self::primaryId, '=', $id)
+            'EditData' => DB::table('tbl_purchase_head')
+                ->where('tranNo', '=', $id)
                 ->first()
         ]);
     }
@@ -449,18 +438,43 @@ class PurchaseController extends Purchase {
     /**
      * Update the specified resource in storage.
      */
-    public function update(PurchaseUpdateRequest $request, string $id) {
+    public function update(MainPurchaseRequest $request, string $tranNo) {
         if (!$this->can('edit')) {
             // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
         $data = [
-            ...$request->validated(),
-            'updated_by' => auth()->user()->UserID,
+            ...$request->except(['products']),
+            'updatedBy' => auth()->user()->UserID,
+            'dflag' => false
         ];
+        // start the transactions
+        DB::transaction(function () use ($tranNo, $request, $data) {
+            // delete previously made products
+            DB::table('tbl_purchase_details')
+                ->where('tranNo', $tranNo)
+                ->delete();
 
-        // create logs, create Data
-        LogForUpdatedEvents::dispatch($data, self::table, $id);
+            // creating purchasedItems
+            collect($request->products)->map(function ($item) use ($tranNo) {
+                $itemNumber = $this->docNum->getDocNum('PurchasedItems');
+                // udating data
+                $purchaseData = [
+                    ...$item, // single product
+                    'detailId' => $itemNumber,
+                    'tranNo' => $tranNo,
+                    'created_at' => now(),
+                ]; // updating docnum
+
+                $this->docNum->updateDocNum('PurchasedItems'); // updating documnet number
+                LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details');
+            }); // making it a collection to use the map function
+
+            // create logs, create Data
+            LogForUpdatedEvents::dispatch($data, 'tbl_purchase_head', $tranNo);
+            // $this->docNum->updateDocNum(self::docName); // updating documnet number
+            DB::commit(); // commiting the database trans -> doesnt required usually, the events contain commit itself
+        });
         return response()->json(['status' => true, 'message' => 'Purchase Updated Successfully']);
     }
 
@@ -489,15 +503,15 @@ class PurchaseController extends Purchase {
             // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
-        $databaseDeletionData = (array) DB::table(self::table)
-            ->where(self::primaryId, '=', $id)
+        $databaseDeletionData = (array) DB::table('tbl_purchase_head')
+            ->where('tranNo', '=', $id)
             ->get()->toArray()[0];
 
         if (!$this->hasLength($databaseDeletionData)) {
             return response()->json(['status' => false, 'message' => 'Database record not found']);
         }
 
-        LogForDeletedEvents::dispatch($databaseDeletionData, self::table);
+        LogForDeletedEvents::dispatch($databaseDeletionData, 'tbl_purchase_head');
         return response()->json(['status' => true, 'message' => 'Purchase Moved to Trash']);
     }
 
@@ -508,27 +522,27 @@ class PurchaseController extends Purchase {
     /**
      * Fetch table resource for trash table
      */
-    public function trashApi() {
+    public function trashApi(Request $request) {
         if (!$this->can('view')) {
             // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
         $columns = [
-            ['db' => 'puid', 'dt' => '0'],
-            ['db' => 'date', 'dt' => '1'],
-            ['db' => 'name', 'dt' => '2'],
-            // is active column
-            ['db' => 'is_active', 'dt' => '3', "formatter" => function ($d, $row) {
-                return $d == '1'
-                    ? "<span class='badge badge-success m-1'>Active</span>"
-                    : "<span class='badge badge-danger m-1'>Inactive</span>";
-            }],
-            // created by
-            ['db' => 'created_by', 'dt' => '4'],
+            ['db' => 'tranNo', 'dt' => '0'],
+            ['db' => 'tranDate', 'dt' => '1'],
+            ['db' => 'supplierId', 'dt' => '2'],
+            ['db' => 'invoiceNo', 'dt' => '3'],
+            ['db' => 'mop', 'dt' => '4'],
+            ['db' => 'taxable', 'dt' => '5'],
+            ['db' => 'taxAmount', 'dt' => '6'],
+            ['db' => 'TotalAmount', 'dt' => '7'],
+            ['db' => 'paidAmount', 'dt' => '8'],
+            ['db' => 'balanceAmount', 'dt' => '9'],
+
             // buttons
             [
-                'db' => 'puid',
-                'dt' => '5',
+                'db' => 'tranNo',
+                'dt' => '10',
                 'formatter' => function ($d, $row) {
                     $html = '
                     <button 
@@ -544,10 +558,11 @@ class PurchaseController extends Purchase {
             ],
         ];
 
+
         return (new ServerSideProcess())->SSP([
-            'POSTDATA' => [],
-            'TABLE' => self::table,
-            'PRIMARYKEY' => self::primaryId,
+            'POSTDATA' => $request,
+            'TABLE' => 'tbl_purchase_head',
+            'PRIMARYKEY' => 'tranNo',
             'COLUMNS' => $columns,
             'COLUMNS1' => $columns,
             'GROUPBY' => null,
@@ -564,12 +579,12 @@ class PurchaseController extends Purchase {
             // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
-        $dataToRestore = (array) DB::table(self::table)
+        $dataToRestore = (array) DB::table('tbl_purchase_head')
             ->where('dflag', '=', 1)
-            ->where(self::primaryId, '=', $id)
+            ->where('tranNo', '=', $id)
             ->get()->toArray()[0];
 
-        LogForRestoredEvents::dispatch($dataToRestore, self::table);
+        LogForRestoredEvents::dispatch($dataToRestore, 'tbl_purchase_head');
         return response()->json(['status' => true, 'message' => 'Purchase Restored Successfully']);
     }
 
@@ -618,8 +633,9 @@ class PurchaseController extends Purchase {
         return response()->json($this->requestSupplierRecords());
     }
 
-    public function recordPerchase(MainPurchaseRequest $mainPurchaseRequest) {
-        dd($mainPurchaseRequest);
-        return response()->json(['message' => 'Ppurchase created successfully'], 201);
+    public function requestCreatedProducts(string $tranNo) {
+        return DB::table('tbl_purchase_details')
+            ->where('tranNo', $tranNo)
+            ->get()->toArray();
     }
 }

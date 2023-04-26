@@ -36,11 +36,16 @@
                             <table class="table" id="tblpurchase">
                                 <thead>
                                     <tr>
-                                        <th class="text-center">Id</th>
+                                        <th class="text-center">Number</th>
                                         <th class="text-center">Date</th>
-                                        <th class="text-center">Name</th>
-                                        <th class="text-center">Active status</th>
-                                        <th class="text-center">Created by</th>
+                                        <th class="text-center">Invoice Number</th>
+                                        <th class="text-center">supplier</th>
+                                        <th class="text-center">MOP</th>
+                                        <th class="text-center">taxable</th>
+                                        <th class="text-center">taxAmount</th>
+                                        <th class="text-center">paidAmount</th>
+                                        <th class="text-center">balanceAmount</th>
+                                        <th class="text-center">TotalAmount</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
