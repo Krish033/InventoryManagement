@@ -9,15 +9,18 @@ use App\Events\LogForUpdatedEvents;
 use App\Http\Controllers\Controller;
 
 use App\Http\Controllers\logController;
+use App\Http\Requests\Purchase\MainPurchaseRequest;
 use App\Http\Requests\Transactions\PurchaseCreateRequest;
 use App\Http\Requests\Transactions\PurchaseUpdateRequest;
 use App\Models\DocNum;
 use App\Models\general;
 use App\Models\ServerSideProcess;
-
+use App\Services\Purchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+
+use function PHPSTORM_META\map;
 
 /**
  * -----------------------------------------------------
@@ -26,7 +29,7 @@ use Illuminate\Support\Facades\DB;
  * Resource controller matched with defaults
  */
 
-class PurchaseController extends Controller {
+class PurchaseController extends Purchase {
 
     private $general;
     private $docNum;
@@ -63,9 +66,9 @@ class PurchaseController extends Controller {
      */
     public function __construct() {
 
-        $this->activeMenu = "";
+        $this->activeMenu = "Purchase";
 
-        $this->pageTitle = "";
+        $this->pageTitle = "Purchase";
 
         $this->docNum = new DocNum();
 
@@ -373,7 +376,7 @@ class PurchaseController extends Controller {
             // abort(401, "Un Authorized");
         }
 
-        return view(self::views . ".create", [
+        return view(self::views . ".main", [
             'UInfo' => $this->general->UserInfo['UInfo'],
             'menus' => $this->menus,
             'crud' => $this->crud,
@@ -386,21 +389,37 @@ class PurchaseController extends Controller {
     /**
      * Store a newly created resource in storage.
      */
-    public function store(PurchaseCreateRequest $request) {
+    public function store(MainPurchaseRequest $request) {
         if (!$this->can('add')) {
             // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
+
         $documentNumber = $this->docNum->getDocNum(self::docName);
 
         $data = [
-            ...$request->validated(),
-            'puid' => $documentNumber,
-            'created_by' => auth()->user()->UserID,
+            ...$request->except(['products']),
+            'tranNo' => $documentNumber,
+            'createdBy' => auth()->user()->UserID,
+            'created_at' => now(),
             'dflag' => false
         ];
 
+        collect($request->products)->map(function ($item) use ($documentNumber) {
+            $itemNumber = $this->docNum->getDocNum('PurchasedItems');
+            $purchaseData = [
+                ...$item,
+                'detailId' => $itemNumber,
+                'tranNo' => $documentNumber,
+                'created_at' => now(),
+            ];
+
+            $this->docNum->updateDocNum('PurchasedItems'); // updating documnet number
+            LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details');
+        });
+
         // create logs, create Data
-        LogForStoredEvent::dispatch($data, self::table);
+        LogForStoredEvent::dispatch($data, 'tbl_purchase_head');
+
         $this->docNum->updateDocNum(self::docName); // updating documnet number
         return response()->json(['status' => true, 'message' => 'Purchase created Successfully']);
     }
@@ -552,5 +571,55 @@ class PurchaseController extends Controller {
 
         LogForRestoredEvents::dispatch($dataToRestore, self::table);
         return response()->json(['status' => true, 'message' => 'Purchase Restored Successfully']);
+    }
+
+    /**
+     * Summary of requesttaxes
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function requesttaxes() {
+        return response()->json([...$this->requestTaxRecords()]);
+    }
+
+    /**
+     * Summary of requesttax
+     * @param string $taxId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function requesttax(string $taxId) {
+        return response()->json($this->requestSingleTaxRecords($taxId));
+    }
+
+    /**
+     * Summary of requestCategories
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function requestCategories() {
+        return response()->json([...$this->requestCategoryRecords()], 200);
+    }
+
+    /**
+     * Summary of requestSubcategories
+     * @param string $cid
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function requestSubcategories(string $cid) {
+        return response()->json([...$this->requestSubCategoryRecords($cid)]);
+    }
+
+    public function requestProducts(string $scId) {
+        return response()->json([...$this->requestProductRecords($scId)]);
+    }
+
+    public function requestSingleProducts(string $pid) {
+        return response()->json($this->requestSingleProductRecords($pid));
+    }
+    public function requestSuppliers() {
+        return response()->json($this->requestSupplierRecords());
+    }
+
+    public function recordPerchase(MainPurchaseRequest $mainPurchaseRequest) {
+        dd($mainPurchaseRequest);
+        return response()->json(['message' => 'Ppurchase created successfully'], 201);
     }
 }

@@ -32,6 +32,17 @@ Route::controller(PurchaseController::class)->group(function () {
     Route::get('/transactions/api/purchased-item/stats/{puid}', 'stats'); // get total amount and number of items
     // ? update purchase records
     Route::post('/transactions/api/purchased-item/payment-record/{puid}', 'createPaymentRecords'); // update payment records
+
+    // new Purchase Record
+    Route::get('/transactions/api/purchase/requestCategory', 'requestCategories')->name('purchase.category'); // category record
+    Route::get('/transactions/api/purchase/request-subCategory/{scId}', 'requestSubcategories')->name('purchase.subcategory'); // Sub category record
+    Route::get('/transactions/api/purchase/request-products/{scId}', 'requestProducts')->name('purchase.products'); // Sub category record
+    Route::get('/transactions/api/purchase/request-single-products/{pid}', 'requestSingleProducts')->name('purchase.single.products'); // Sub category record
+    Route::get('/transactions/api/purchase/requestTax', 'requesttaxes')->name('purchase.tax'); // Tax Record
+    Route::get('/transactions/api/purchase/requestSingleTax/{taxId}', 'requesttax')->name('purchase.single.tax'); // Single Tax record
+    Route::get('/transactions/api/purchase/request-suppliers', 'requestSuppliers')->name('purchase.suppliers'); // category record
+
+    Route::post('/transactions/api/purchase/create-record', 'store'); // category record
 });
 
 // single action controller -- purchase items

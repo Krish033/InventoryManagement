@@ -270,6 +270,7 @@
     <script src="{{url('/')}}/assets/js/custom-prototype.js"></script>
     <script src="{{url('/')}}/Assets2/plugins/sweet-alert/sweetalert.js"></script>
     <script src="{{url('/')}}/Assets2/plugins/sweet-alert/sweetalert.min.js"></script>
+    <script src="{{url('/')}}/Assets2/helpers.js"></script>
 
     {{-- JS ==================================================================================================
     Custom
