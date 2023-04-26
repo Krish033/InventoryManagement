@@ -16,12 +16,13 @@ Route::controller(PurchaseController::class)->group(function () {
 
     Route::get('/transactions/api/purchase', 'homeApi')->name('purchase.home.api');
     Route::get('/transactions/api/purchase/trash', 'trashApi')->name('purchase.trash.api');
-    Route::get('/transactions/api/purchase/tax-records', 'taxes'); // get Tax records
-    Route::post('/transactions/purchase/assign-tax/{puid}', 'recordTax'); // attach tax request to item
-    Route::post('/transactions/purchase/auto-update-payments/{puid}', 'autoUpdatePayments'); // attach tax request to item
+    // Route::get('/transactions/api/purchase/tax-records', 'taxes'); // get Tax records
+    // Route::post('/transactions/purchase/assign-tax/{puid}', 'recordTax'); // attach tax request to item
+    // Route::post('/transactions/purchase/auto-update-payments/{puid}', 'autoUpdatePayments'); // attach tax request to item
     // create / update actions 
     Route::get('/transactions/purchase/create', 'create')->name('purchase.create');
     Route::post('/transactions/purchase/create', 'store');
+
     Route::get('/transactions/purchase/update/{puid}', 'edit')->name('purchase.update');
     Route::post('/transactions/purchase/update/{puid}', 'update');
 
@@ -29,15 +30,16 @@ Route::controller(PurchaseController::class)->group(function () {
     Route::post('/transactions/purchase/delete/{puid}', 'destroy')->name('purchase.delete');
     Route::post('/transactions/purchase/restore/{puid}', 'restore')->name('purchase.restore');
 
-    Route::get('/transactions/api/purchased-item/stats/{puid}', 'stats'); // get total amount and number of items
-    // ? update purchase records
-    Route::post('/transactions/api/purchased-item/payment-record/{puid}', 'createPaymentRecords'); // update payment records
+    // Route::get('/transactions/api/purchased-item/stats/{puid}', 'stats'); // get total amount and number of items
+    // Route::post('/transactions/api/purchased-item/payment-record/{puid}', 'createPaymentRecords'); // update payment records
 
     // new Purchase Record
     Route::get('/transactions/api/purchase/requestCategory', 'requestCategories')->name('purchase.category'); // category record
     Route::get('/transactions/api/purchase/request-subCategory/{scId}', 'requestSubcategories')->name('purchase.subcategory'); // Sub category record
+
     Route::get('/transactions/api/purchase/request-products/{scId}', 'requestProducts')->name('purchase.products'); // Sub category record
     Route::get('/transactions/api/purchase/request-single-products/{pid}', 'requestSingleProducts')->name('purchase.single.products'); // Sub category record
+
     Route::get('/transactions/api/purchase/requestTax', 'requesttaxes')->name('purchase.tax'); // Tax Record
     Route::get('/transactions/api/purchase/requestSingleTax/{taxId}', 'requesttax')->name('purchase.single.tax'); // Single Tax record
     Route::get('/transactions/api/purchase/request-suppliers', 'requestSuppliers')->name('purchase.suppliers'); // category record

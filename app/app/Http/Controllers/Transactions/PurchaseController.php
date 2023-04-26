@@ -178,182 +178,6 @@ class PurchaseController extends Purchase {
     }
 
     /**
-     * Get the Statistics
-     * @param string $puid
-     * @return \Illuminate\Support\Collection
-     */
-    protected function getItemsStats(string $puid) {
-        // getting data
-        $purchase = (array) DB::table('tbl_purchases')
-            ->where('puid', '=', $puid)
-            ->get()
-            ->toArray()[0];
-
-        // get purchase count
-        $purchaseCount = DB::table('tbl_purchased_items')
-            ->where('purchase_id', '=', $puid)
-            ->where('dflag', 0)
-            ->count();
-
-        // get price value
-        $purchasePriceTotalArray = DB::table('tbl_purchased_items')
-            ->where('purchase_id', '=', $puid)
-            ->where('dflag', 0)
-            ->pluck('amount')
-            ->toArray();
-
-        $calculatedPriceTotal = array_sum($purchasePriceTotalArray);
-
-        // calculating gst
-        $taxId = $purchase['tax_id'];
-        $taxValueInPercent = DB::table('tbl_tax')
-            ->where('TaxID', $taxId)
-            ->pluck('TaxPercentage')
-            ->first();
-
-        $tax = ($calculatedPriceTotal * intval($taxValueInPercent)) / 100;
-        $calculatedPriceTotalIncludingGST = $calculatedPriceTotal + $tax;
-
-        return collect([
-            'purchase' => $purchase,
-            'calculatedPriceTotal' => $calculatedPriceTotal,
-            'purchaseCount' => $purchaseCount,
-            'calculatedPriceTotalIncludingGST' => $calculatedPriceTotalIncludingGST,
-            'tax' => $taxValueInPercent
-        ]);
-    }
-
-    /**
-     * To return stats to api view
-     * @param string $puid
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function stats(string $puid) {
-        $itemStats = $this->getItemsStats($puid);
-        // dd($itemStats);
-        return response()->json($itemStats->toArray());
-    }
-
-    /**
-     * get tax record Api
-     * @return array
-     */
-    public function taxes() {
-        return DB::table('tbl_tax')
-            ->where('DFlag', 0)
-            ->get()
-            ->toArray();
-    }
-
-    /**
-     * Assign tax to Elements
-     * @param Request $request
-     * @param string $puid
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function recordTax(Request $request, string $puid) {
-        if (!$this->can('edit')) {
-            // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
-        }
-
-        // checking if tax record exists
-        $tax = DB::table('tbl_tax')
-            ->where('TaxID', '=', $request->tax_id)
-            ->count() > 0;
-
-        if (!$tax) {
-            return response()->json(['message' => 'Tax not found'], 404);
-        }
-        // assign tax record
-        $purchase = (array) DB::table(self::table)
-            ->where('puid', $puid)
-            ->get()
-            ->toArray()[0];
-
-        // spreading the data to assign tax id
-        $data = [
-            ...$purchase, // get the purchase
-            'tax_id' => $request->tax_id,
-        ];
-
-        LogForUpdatedEvents::dispatch($data, self::table, $puid);
-        return response()->json(['message' => 'Tax assigned successfully'], 200);
-    }
-
-    /**
-     * Update auto update payments
-     * @param Request $request
-     * @param string $puid
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function autoUpdatePayments(Request $request, string $puid) {
-        $integerValue = $request->auto_update_payment == "true"
-            ? 1 // true
-            : 0; // if set to true the paymnet can be updated by a single button
-
-        DB::table(self::table)
-            ->where('puid', '=', $puid)
-            ->update(['auto_update_payment' => $integerValue]);
-
-        return response()->json(['message' => 'Updated auto update payments']);
-    }
-
-    public function createPaymentRecords(string $puid) {
-
-        $purchaseStats = $this->getItemsStats($puid);
-        // getting tax record
-        if (!$purchaseStats['purchase']['tax_id']) {
-            return response()->json(['message' => "Select a tax record!"], 500);
-        }
-
-        // find payments 
-        $paymentRecordExists = (array) DB::table('tbl_payments')
-            ->where('reference_id', '=', $puid)
-            ->first();
-
-        // can be edited
-        $itemIsEditable = empty($paymentRecordExists);
-
-        // not found
-        if ($itemIsEditable == true) {
-            $paymentRecordExists = [
-                "pyid" => (new DocNum())->getDocNum('Payments'),
-            ];
-            // updating docnum
-            (new DocNum())->updateDocNum('Payments');
-        }
-
-        // record need to be uploaded
-        $updatedPaymentRecord = [
-            ...$paymentRecordExists,
-            "date" => $purchaseStats['purchase']['date'],
-            "description" => "",
-            "category" => "purchase",
-            "amount" => $purchaseStats['calculatedPriceTotal'],
-            "payment_type" => "expense",
-            "deleted_by" => 'admin',
-            "dflag" => 0,
-            'tax_amount' => $purchaseStats['calculatedPriceTotalIncludingGST'],
-            "created_at" => now(),
-            "updated_at" => now(),
-            "reference_id" => $puid
-        ];
-
-        if ($itemIsEditable == true) { // create that item
-            DB::table('tbl_payments')
-                ->insert($updatedPaymentRecord);
-            return response()->json(['message' => "Payment records created"], 201);
-        }
-
-        // update that item
-        DB::table('tbl_payments')
-            ->where('reference_id', '=', $puid)
-            ->update($updatedPaymentRecord);
-        return response()->json(['message' => "Payment records updated"], 202);
-    }
-
-
-    /**
      * Show the form for creating a new resource.
      */
     public function create() {
@@ -515,12 +339,19 @@ class PurchaseController extends Purchase {
         return response()->json(['status' => true, 'message' => 'Purchase Moved to Trash']);
     }
 
+    /**
+     * Summary of hasLength
+     * @param array $arr
+     * @return bool
+     */
     protected function hasLength(array $arr) {
         return count($arr) > 0;
     }
 
     /**
-     * Fetch table resource for trash table
+     * Summary of trashApi
+     * @param Request $request
+     * @return array
      */
     public function trashApi(Request $request) {
         if (!$this->can('view')) {
@@ -558,7 +389,6 @@ class PurchaseController extends Purchase {
             ],
         ];
 
-
         return (new ServerSideProcess())->SSP([
             'POSTDATA' => $request,
             'TABLE' => 'tbl_purchase_head',
@@ -572,7 +402,9 @@ class PurchaseController extends Purchase {
     }
 
     /**
-     * Restore specific resource
+     * restore a resource
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function restore(string $id) {
         if (!$this->can('restore')) {
@@ -622,20 +454,42 @@ class PurchaseController extends Purchase {
         return response()->json([...$this->requestSubCategoryRecords($cid)]);
     }
 
+    /**
+     * Summary of requestProducts
+     * @param string $scId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function requestProducts(string $scId) {
         return response()->json([...$this->requestProductRecords($scId)]);
     }
 
+    /**
+     * Summary of requestSingleProducts
+     * @param string $pid
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function requestSingleProducts(string $pid) {
         return response()->json($this->requestSingleProductRecords($pid));
     }
+
+    /**
+     * Summary of requestSuppliers
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function requestSuppliers() {
         return response()->json($this->requestSupplierRecords());
     }
 
+    /**
+     * Summary of requestCreatedProducts
+     * @param string $tranNo
+     * @return array
+     */
     public function requestCreatedProducts(string $tranNo) {
         return DB::table('tbl_purchase_details')
             ->where('tranNo', $tranNo)
             ->get()->toArray();
     }
+
+
 }

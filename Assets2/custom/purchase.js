@@ -1,4 +1,11 @@
 // craete option element
+const tooltipTriggerList = document.querySelectorAll(
+  '[data-bs-toggle="tooltip"]'
+);
+const tooltipList = [...tooltipTriggerList].map(
+  (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
+);
+
 const createSelectOption = (parent, data, key, value, selected) => {
   // createing item
   data.map((item) => {
@@ -93,21 +100,19 @@ const requestSuppliers = () => {
   return data;
 };
 
-const calculateTaxAmount = (amount, taxPercentage) => {
-  return (parseInt(amount) * parseInt(taxPercentage)) / 100;
-};
-
 const validateFunction = (nodeList) => {
   let validatedArray = {};
+
   let error = false;
   const subNodeList = [...nodeList];
 
   subNodeList.map((item) => {
-    if (item.classList.contains("disabled") || empty(item.value)) {
-      item.classList.add("bg-danger");
+    if (empty(item.value)) {
+      item.classList.add("validation-error");
       error = true;
       return;
     }
+
     validatedArray = {
       ...validatedArray,
       [item.id]: item.value,
@@ -119,14 +124,24 @@ const validateFunction = (nodeList) => {
     return false;
   }
 
-  subNodeList.map((item) => {
+  clearInputs(subNodeList);
+  return validatedArray;
+};
+
+const clearInputs = (subNodeList = getClearables()) => {
+  subNodeList.map(async (item) => {
     if (item instanceof HTMLSelectElement) {
       return;
     }
     // clearing the value
-    return (item.value = "");
+    item.value = "";
+    clearSelectInputs();
+    const category = document.querySelector("#categoryId");
+    const { data } = await requestCategories();
+    createSelectOption(category, data, "CID", "CName");
+    disableInputs();
+    return true;
   });
-  return validatedArray;
 };
 
 const genepriceGrandTotal = () => {
@@ -149,6 +164,16 @@ const requestTotalTax = () => {
   return sum;
 };
 
+const disableInputs = () => {
+  const disabled = ["quantity", "price", "tax", "subCategoryId", "productId"];
+
+  disabled.forEach((item) => {
+    if (document.querySelector("#" + item) !== null) {
+      document.querySelector("#" + item).classList.add("disabled");
+    }
+  });
+};
+
 const requestTotalInfo = () => {
   const totalElement = [
     ...document.querySelectorAll("[data-subtotal-element]"),
@@ -162,14 +187,16 @@ const requestTotalInfo = () => {
 };
 
 const requestValidatedArray = () => {
+  return validateFunction(getClearables());
+};
+
+const getClearables = () => {
   const validateObject = document.querySelector("#createForm");
 
-  const validatables = [
+  return [
     ...validateObject.querySelectorAll("input"),
     ...validateObject.querySelectorAll("select"),
   ];
-
-  return validateFunction(validatables);
 };
 
 const createDOMElement = async (obj) => {
@@ -195,7 +222,6 @@ const createDOMElement = async (obj) => {
   const category = document.createElement("td");
   category.textContent = obj?.categoryId;
   tr.appendChild(category);
-  console.log(category);
   // category
   const subcategory = document.createElement("td");
   subcategory.textContent = obj.subCategoryId;
@@ -244,10 +270,10 @@ const createDOMElement = async (obj) => {
   tr.appendChild(subtotal);
   // button
   const td = document.createElement("td");
-
+  td.classList.add("btn-td");
   const btn = document.createElement("button");
   btn.className = "btn btn-sm btn-outline-danger";
-  btn.innerHTML = '<i class="fa fa-close"></i>';
+  btn.innerHTML = '<i class="fa fa-trash"></i>';
 
   const edit = document.createElement("button");
   edit.className = "btn btn-sm btn-outline-primary me-2";
@@ -255,7 +281,6 @@ const createDOMElement = async (obj) => {
 
   td.appendChild(edit);
   td.appendChild(btn);
-
   tr.appendChild(td);
 
   btn.addEventListener("click", () => {
@@ -297,4 +322,37 @@ const clearSelectInputs = (exclude = []) => {
   });
 
   return true;
+};
+
+const calculateTaxAmount = (amount, taxPercentage) => {
+  return (parseInt(amount) * parseInt(taxPercentage)) / 100;
+};
+
+const updateEverything = () => {
+  // updatable values
+  const quantity = document.querySelector("#quantity"),
+    rate = document.querySelector("#price"),
+    taxtype = document.querySelector("#taxType"),
+    taxPercentage = document.querySelector("#taxPercentage"),
+    taxable = document.querySelector("#taxable"),
+    taxAmount = document.querySelector("#taxAmount"),
+    subtotal = document.querySelector("#subtotal");
+  // quantity change
+  const quantityValue = parseFloat(quantity.value);
+  const rateValue = parseFloat(rate.value);
+  const taxPercent = parseFloat(taxPercentage.value);
+  // get values
+  taxable.value = quantityValue * rateValue;
+  const taxableValue = parseFloat(taxable.value);
+  // calcualte tax amount
+  taxAmount.value = calculateTaxAmount(
+    taxableValue,
+    isNaN(taxPercent) ? 0.0 : taxPercent
+  );
+  // dont calculate tax if excluded
+  if (taxtype.value == "exclude") {
+    taxAmount.value = 0.0;
+  }
+  // calculating sub total
+  subtotal.value = taxableValue + parseFloat(taxAmount.value);
 };

@@ -4,42 +4,66 @@
 <style>
     .createForm input,
     select {
-        border: 1px solid #000 !important;
+        border: 1px solid #000;
         background: transparent !important;
-        color: #000 !important;
+        color: #000;
         font-size: .8em !important;
     }
 
     .createFormDiv {
-        background: #FFF6DE;
         padding: .5em;
-        /* margin: 10px 0; */
     }
 
     .createForm {
-        border-top: 1.4px solid #000;
-        border-bottom: 1.4px solid #000;
         padding: .2em 0;
     }
 
     .editing {
-        background: #FFF6DE;
+        background: lightgray;
     }
 
     .disabled {
         pointer-events: none;
         user-select: none;
-        background: rgb(196, 196, 196) !important
+        background: rgb(240, 239, 239) !important
     }
 
-    .floating {
-        position: absolute;
-        width: 100vw;
+    .btn-td {
+        display: flex;
+        justify-content: center;
+        align-content: center;
+    }
 
+    .createFormRow .form-group {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        align-self: center;
+    }
+
+    .createFormRow button {
+        align-self: center;
+        margin-top: 7px;
+    }
+
+    .createFormRow .form-group label {
+        font-size: .8em !important;
+    }
+
+    hr {
+        background: #000 !important;
+        margin: 0 0 10px 0 !important;
+    }
+
+    .validation-error {
+        border: 1px solid rgb(214, 0, 0) !important;
+        color: rgb(160, 6, 6) !important;
+        /* background: red !important; */
     }
 </style>
 @endsection
-
 
 @section('content')
 <div class="container-fluid">
@@ -62,22 +86,26 @@
         <form class="form">
             <div class="d-md-flex gap-3">
                 <div class="form-group d-flex" style="flex-direction: column">
-                    <label for="" class="mb-0 fs-14">Date</label>
+                    <label for="" class="mb-0 fs-14">Date <span class="text-danger fs-14">*</span></label>
                     <input @if($isEdit) value="{{ $EditData->tranDate }}" @endif class="form-control form-control-sm"
-                        id="date" type="date">
+                        id="tranDate" type="date">
+                    <span class="fs-12 text-danger" data-validation data-error="tranDate"></span>
                 </div>
                 <div class="form-group d-flex" style="flex-direction: column">
-                    <label for="" class="mb-0 fs-14">Supplier</label>
-                    <select class="form-control form-control-sm" name="" id="supplierSelect">
-                        <option value="">The Main Supplier</option>
+                    <label for="" class="mb-0 fs-14">Supplier <span class="text-danger fs-14">*</span></label>
+                    <select class="form-control form-control-sm" id="supplierId">
+                        <option value="" selected>Select a Supplier</option>
                     </select>
+                    <span class="fs-12 text-danger" data-validation data-error="supplierId"></span>
                 </div>
                 <div class="form-group d-flex" style="flex-direction: column">
-                    <label for="" class="mb-0 fs-14">Payment type</label>
-                    <select class="form-control form-control-sm" name="" id="paymentType">
+                    <label for="" class="mb-0 fs-14">Payment type <span class="text-danger fs-14">*</span></label>
+                    <select class="form-control form-control-sm" name="" id="mop">
+                        <option @if(!$isEdit) selected @endif value="">Select Payment type</option>
                         <option @if($isEdit && $EditData->mop == 'cash') selected @endif value="cash">Cash</option>
                         <option @if($isEdit && $EditData->mop == 'card') selected @endif value="card">Card</option>
                     </select>
+                    <span class="fs-10 text-danger" data-validation data-error="mop"></span>
                 </div>
                 <div class="form-group d-flex" style="flex-direction: column">
                     <label for="" class="mb-0 fs-14">Invoice Number</label>
@@ -87,51 +115,87 @@
             </div>
         </form>
         {{-- style="background: rgba(215, 208, 79, 0.123)" --}}
-        <div class="createForm">
-            <form class="form" id="createForm">
-                <div class="row m-0 gap-1 createFormDiv" style="align-items: center">
-                    <select id="categoryId" class="form-control form-control-sm bg-outline-dark col-1"
-                        style="background: transparent" type="text">
-                    </select>
-                    <select id="subCategoryId" class="form-control form-control-sm bg-outline-dark col-1 disabled"
-                        style="background: transparent" type="text">
-                    </select>
-                    <select id="productId" class="form-control form-control-sm bg-outline-dark col-1 disabled"
-                        style="background: transparent" type="text">
-                    </select>
-                    <input placeholder="Description" id="description" class="form-control form-control-sm col-1"
-                        type="text">
-                    <input placeholder="Quantity" id="quantity" class="form-control form-control-sm col-1 disabled"
-                        type="number">
-                    {{-- tax --}}
-                    <input id="price" readonly placeholder="Rate(Rs)" class="form-control form-control-sm col-1"
-                        type="text"> {{-- tax type
-                    --}}
-                    <select id="taxType" class="form-control form-control-sm bg-outline-dark col-1"
-                        style="background: transparent" type="text">
-                        <option value="include">Include</option>
-                        <option value="exclude">Exclude</option>
-                    </select>
-                    <select id="taxPercentage" class="form-control form-control-sm bg-outline-dark col-1"
-                        style="background: transparent" type="text">
-                    </select>
-                    <input class="form-control form-control-sm col-1" id="taxable" readonly value="0.00" type="text">
-                    {{-- taxable
-                    --}}
-                    <input readonly id="taxAmount" value="0.00" class="form-control form-control-sm col-1" type="text">
-                    {{-- tax
-                    amount --}}
-                    <input id="subtotal" readonly class="form-control form-control-sm col-1" type="text"> {{-- Amount
-                    --}}
+        <div class="createForm px-2 rounded">
+            <form id="createForm" class="form p-2">
+                <hr />
+                <div class="row  createFormRow">
+                    <div class="form-group col-2">
+                        <label for="" class="form-label text-dark">Category</label>
+                        <select data-toggle="tooltip" title="Category" id="categoryId"
+                            class="form-control form-control-sm bg-outline-dark w-100" type="text">
+                        </select>
+                    </div>
+                    <div class="form-group col-2 d-flex w-100">
+                        <label for="" class="form-label text-dark">Subcategory</label>
+                        <select data-toggle="tooltip" title="Subcategory" id="subCategoryId"
+                            class="form-control form-control-sm bg-outline-dark disabled"
+                            style="background: transparent" type="text">
+                        </select>
+                    </div>
+                    <div class="form-group col-2 d-flex w-100">
+                        <label for="" class="form-label text-dark">Product</label>
+                        <select data-toggle="tooltip" title="product" id="productId"
+                            class="form-control form-control-sm bg-outline-dark  disabled"
+                            style="background: transparent" type="text">
+                        </select>
+                    </div>
+                    <div class="form-group col-2 d-flex w-100">
+                        <label for="" class="form-label text-dark">Description</label>
+                        <input data-toggle="tooltip" title="description" placeholder="Description" id="description"
+                            class="form-control form-control-sm" type="text">
+                    </div>
+                    <div class="form-group col-1 d-flex w-100">
+                        <label for="" class="form-label text-dark">Quantity</label>
+                        <input data-toggle="tooltip" title="Quantity" placeholder="Quantity" id="quantity"
+                            class="form-control form-control-sm  disabled" type="number">
+                    </div>
+                    <div class="form-group col-1 d-flex w-100">
+                        <label for="" class="form-label text-dark">Rate</label>
+                        <input data-toggle="tooltip" title="Rate" id="price" readonly placeholder="Rate(Rs)"
+                            class="form-control form-control-sm " type="text">
+                    </div>
+                    <div class="form-group col-2 d-flex w-100">
+                        <label for="" class="form-label text-dark">Tax type</label>
+                        <select data-toggle="tooltip" title="Tax type" id="taxType"
+                            class="form-control form-control-sm bg-outline-dark" style="background: transparent"
+                            type="text">
+                            <option value="include">Include</option>
+                            <option value="exclude">Exclude</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2 d-flex w-100">
+                        <label for="" class="form-label text-dark">Tax percentage</label>
+                        <select data-toggle="tooltip" title="Tax percentage" id="taxPercentage"
+                            class="form-control form-control-sm bg-outline-dark col" style="background: transparent"
+                            type="text">
+                        </select>
+                    </div>
+                    <div class="form-group col-1 d-flex w-100">
+                        <label for="" class="form-label text-dark">Taxable</label>
+                        <input data-toggle="tooltip" title="Taxable" class="form-control form-control-sm col"
+                            id="taxable" readonly type="text">
+                    </div>
+                    <div class="form-group col-2 d-flex w-100">
+                        <label for="" class="form-label text-dark">Tax amount</label>
+                        <input data-toggle="tooltip" title="Tax amount" readonly id="taxAmount"
+                            class="form-control form-control-sm col" type="text">
+                    </div>
+                    <div class="form-group col-2 d-flex w-100">
+                        <label for="" class="form-label text-dark">Sub total</label>
+                        <input data-toggle="tooltip" title="Sub total" id="subtotal" readonly
+                            class="form-control form-control-sm col" type="text">
+                    </div>
+
                     <button id="createPurchaseItemForm" class="btn btn-sm btn-outline-primary col-1">
                         <i class="fa fa-check"></i>
                     </button>
                 </div>
+                <hr />
             </form>
         </div>
 
         <div class="tableClass mt-2">
-            <table class="table table-xs" style="width: 100% !important">
+            <table class="table table-responsive table-xs">
                 <thead style="border-bottom: 1px solid #000 !important">
                     <tr>
                         <th>Category</th>
@@ -148,15 +212,14 @@
                         <th>Action</th>
                     </tr>
                 </thead>
-
                 <tbody id="createTable"></tbody>
             </table>
 
             <div class="w-100 d-flex align-items-end mt-5" style="flex-direction: column">
-                <span class="fs-11 bg-success p-2 rounded">SubTotal: Rs. <span id="totalSum"
-                        class="h5">0.00</span></span>
+                <span class="fs-11 p-2 rounded">SubTotal: Rs. <span id="totalSum" class="h5">0.00</span></span>
                 <span class="fs-11 p-2">Tax Total: Rs. <span id="taxTotal" class="h5">0.00</span></span>
-                <span class="fs-11 p-2" style="border-top: 1px solid #000; border-bottom: 1px solid #000">Grand Total:
+                <span class="fs-11 p-2 text-success"
+                    style="border-top: 1px solid #000; border-bottom: 1px solid #000">Grand Total:
                     Rs. <span id="grandTotal" class="h5">0.00</span></span>
             </div>
 
@@ -172,6 +235,7 @@
 @endsection
 
 @section('scripts')
+{{-- main scripts --}}
 <script src="{{ url('/') }}/Assets2/custom/purchase.js"></script>
 
 <script>
@@ -230,112 +294,117 @@
 
         // clear subcategories
     $(document).on('input', '#quantity', async function(e) {
-        const taxable = document.querySelector('#taxable');
-        if(e.target.value < 0) {
-            return;
-        } // entering taxable value
-        taxable.value = parseFloat($('#quantity').val()) * parseFloat($('#price').val())
-        // totalAmount(taxable.value, calculateTaxAmount(taxable.value,$('#taxPercentage').val()));
-        const calculatedTaxAmount = calculateTaxAmount(taxable.value, $('#taxPercentage').val());
-        $('#taxAmount').val(calculatedTaxAmount)
-        totalAmount(taxable.value, calculatedTaxAmount)
+        updateEverything();
         return true;
+    });
+
+    $('#taxType').change(async function(e) {
+        updateEverything();
     });
 
     // clear subcategories
     $('#taxPercentage').change(async function(e) {
-        const taxable = document.querySelector('#taxable').value;
-        const calculatedTaxAmount = calculateTaxAmount(taxable, e.target.value);
-        $('#taxAmount').val(calculatedTaxAmount)
-        totalAmount(taxable, calculatedTaxAmount)
+        updateEverything();
     });
 
     // submit records
     $(document).on('click', '#createPurchaseItemForm', async (e) => {
         e.preventDefault();
         const validated = requestValidatedArray();
-
-        if(!validated){
+        
+        if(!validated){ // validated returns an array | boolean (false)
             return false;
         } // find editings
         if(document?.querySelector('.editing') !== null){
             document?.querySelector('.editing').remove();
         }
+
+        [...document?.querySelectorAll('.validation-error')].map(item => {
+            return item.classList.remove('validation-error')
+        });
+
         createDOMElement(validated);
         return;
     });
 
-
-    
     const appendEditValues = async (e, row, tr) => {
-    Object.entries(row).map((item) => {
-        const el = document.querySelector("#" + item[0]);
-        if (el) {
-        el.value = item[1];
-        }
-    });
 
-    console.log(tr.dataset);
-    //getting and appending categories
-    const { data, isError } = await requestCategories();
-    const categoryId = document.querySelector("#categoryId");
+        const closeBtn = document.createElement('button');
+        closeBtn.className = "btn btn-sm btn-outline-success ms-2";
+        closeBtn.innerHTML = "<i class=\"fa fa-close\"></i>";
+        e.target.parentElement.appendChild(closeBtn);
 
-    // caheck error and create error
-    if (isError) return toastr.error("Something went wrong!", "Failed");
-    createSelectOption(categoryId, data, "CID", "CName", tr.dataset.categoryid);
+        closeBtn.addEventListener('click', event => {
+            tr.classList.remove('editing');
+            closeBtn.remove();
+            clearInputs();
+        });
 
-    const subCategoryId = document.querySelector('#subCategoryId');
-    // getting sub categories purchase.subcategory
-    const { data:sub, isError: subError, error } = await requestSubCategories(tr.dataset.categoryid);
-    if(subError) return toastr.error("Something went wrong!", 'Failed');
-    
-    subCategoryId.classList.remove('disabled');
-    createSelectOption(subCategoryId, sub, 'SCID', 'SCName', tr.dataset.subcategoryid)
+        // add values to inboxes when editted
+        Object.entries(row).map((item) => {
+            const el = document.querySelector("#" + item[0]); // object entries returns an array with two tiems
+            if (el) { // changing the elements values
+                el.value = item[1];
+            }
+        });
 
-    const productId = document.querySelector('#productId');
-    const { data: product, isError:productError } = await requestProducts(tr.dataset.subcategoryid);
-    if(productError) return toastr.error("Something went wrong!", 'Failed');
-    // getting sub categories purchase.subcategory
-    productId.classList.remove('disabled');
-    createSelectOption(productId, product, 'pid', 'name', tr.dataset.productid)
-    const quantity = document.querySelector('#quantity');
-    quantity.classList.remove('disabled');
+        //getting and appending categories
+        const { data, isError } = await requestCategories();
+        const categoryId = document.querySelector("#categoryId");
 
-    //getting and appending categories
-    const { data: taxData, isError: isTaxError } = await requestTaxes();
-    if(isTaxError) return toastr.error("Something went wrong!", 'Failed');
-    const taxSelect = document.querySelector('#taxPercentage');
-    createSelectOption(taxSelect, taxData, 'TaxPercentage', 'TaxName', tr.dataset.taxpercentage)
+        // caheck error and create error
+        if (isError) return toastr.error("Something went wrong!", "Failed");
+        createSelectOption(categoryId, data, "CID", "CName", tr.dataset.categoryid);
 
-    // floatable(tr);
-    tr.classList.add("editing");
-    genepriceGrandTotal();
-    return true;
+        const subCategoryId = document.querySelector('#subCategoryId');
+        // getting sub categories purchase.subcategory
+        const { data:sub, isError: subError, error } = await requestSubCategories(tr.dataset.categoryid);
+        if(subError) return toastr.error("Something went wrong!", 'Failed');
+        
+        subCategoryId.classList.remove('disabled');
+        createSelectOption(subCategoryId, sub, 'SCID', 'SCName', tr.dataset.subcategoryid)
+
+        const productId = document.querySelector('#productId');
+        const { data: product, isError:productError } = await requestProducts(tr.dataset.subcategoryid);
+        if(productError) return toastr.error("Something went wrong!", 'Failed');
+        // getting sub categories purchase.subcategory
+        productId.classList.remove('disabled');
+        createSelectOption(productId, product, 'pid', 'name', tr.dataset.productid)
+        const quantity = document.querySelector('#quantity');
+        quantity.classList.remove('disabled');
+
+        //getting and appending categories
+        const { data: taxData, isError: isTaxError } = await requestTaxes();
+        if(isTaxError) return toastr.error("Something went wrong!", 'Failed');
+        const taxSelect = document.querySelector('#taxPercentage');
+        createSelectOption(taxSelect, taxData, 'TaxPercentage', 'TaxName', tr.dataset.taxpercentage)
+
+        // floatable(tr);
+        tr.classList.add("editing");
+        genepriceGrandTotal();
+        return true;
     };
 
-    // requestItemsFromLocalStorage()
+    // grandTotal price
     genepriceGrandTotal();
 
     $(document).ready(async () => {
         //getting and appending categories
         const {data: suppliers, isError} = await requestSuppliers();
-        const supplierSelect = document.querySelector('#supplierSelect');
+        const supplierSelect = document.querySelector('#supplierId');
         createSelectOption(supplierSelect, suppliers, 'sid', 'name', @if($isEdit) "{{ $EditData->supplierId }}" @endif)
     })
 
     $(document).on('click', '#createPurchase', async (e) => {
-
-
         const swalConfiguration = {
             title: "Are you sure?",
-            text: "Create this p[urchase!",
+            text: "Create this purchase!",
             type: "info",
             showCancelButton: true,
             confirmButtonClass: "btn-outline-success",
             confirmButtonText: "Confrim",
             closeOnConfirm: true
         }
-
         e.preventDefault();
         // get values
         let products = [...document.querySelector('#createTable').children].map(item => {
@@ -352,9 +421,9 @@
             return obj;
         }); // validation
         const validated = {
-            tranDate: $('#date').val(),
-            supplierId: $('#supplierSelect').val(),
-            mop: $('#paymentType').val()
+            tranDate: $('#tranDate').val(),
+            supplierId: $('#supplierId').val(),
+            mop: $('#mop').val()
         } // validated
 
         if(!validate(validated)){
@@ -370,7 +439,9 @@
             paidAmount: 0,
             balanceAmount: $('#grandTotal').html(),
             products,
-        } // send ajax request to post the data
+        } 
+
+        // send ajax request to post the data
         const url = @if(!$isEdit) '/transactions/api/purchase/create-record' @else "/transactions/api/purchase/update-record/{{ $EditData->tranNo }}" @endif
 
         swal(swalConfiguration, async function () {
@@ -383,9 +454,8 @@
             if(isError) return toastr.error("Something went wrong!", 'Failed');
             toastr.success("Purchase Made successfully!", 'Success!')
             window.location.replace("{{ url('/') }}/transactions/purchase");
-        })
-
-    })
+        });
+    });
 
 @if($isEdit)
 
@@ -405,6 +475,7 @@
             createDOMElement(item);
         });
     });
+
 @endif
 </script>
 
