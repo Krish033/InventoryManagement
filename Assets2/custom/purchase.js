@@ -136,12 +136,17 @@ const clearInputs = (subNodeList = getClearables()) => {
     // clearing the value
     item.value = "";
     clearSelectInputs();
-    const category = document.querySelector("#categoryId");
-    const { data } = await requestCategories();
-    createSelectOption(category, data, "CID", "CName");
+
     disableInputs();
     return true;
   });
+};
+
+const getCategoryItems = async () => {
+  const category = document.querySelector("#categoryId");
+  const { data } = await requestCategories();
+  createSelectOption(category, data, "CID", "CName");
+  return data;
 };
 
 const genepriceGrandTotal = () => {
@@ -339,6 +344,8 @@ const updateEverything = () => {
     subtotal = document.querySelector("#subtotal");
   // quantity change
   const quantityValue = parseFloat(quantity.value);
+  if (isNaN(quantityValue)) return false;
+
   const rateValue = parseFloat(rate.value);
   const taxPercent = parseFloat(taxPercentage.value);
   // get values

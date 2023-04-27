@@ -215,7 +215,7 @@ class PurchaseController extends Purchase {
         DB::transaction(function () use ($request, $documentNumber, $data) {
             // creating purchasedItems
             collect($request->products)->map(function ($item) use ($documentNumber) {
-                // ! the collection doesnot return anything
+                // ! the collection does not return anything
                 $itemNumber = $this->docNum->getDocNum('PurchasedItems');
                 // udating data
                 $purchaseData = [

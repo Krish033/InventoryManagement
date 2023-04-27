@@ -19,7 +19,7 @@
     }
 
     .editing {
-        background: lightgray;
+        background: whitesmoke;
     }
 
     .disabled {
@@ -60,7 +60,15 @@
     .validation-error {
         border: 1px solid rgb(214, 0, 0) !important;
         color: rgb(160, 6, 6) !important;
-        /* background: red !important; */
+    }
+
+
+    .createFormRow .form-group label::after {
+        content: '*';
+        color: lightcoral;
+        font-size: .9em;
+        margin-left: 4px;
+        font-weight: 900;
     }
 </style>
 @endsection
@@ -125,36 +133,36 @@
                             class="form-control form-control-sm bg-outline-dark w-100" type="text">
                         </select>
                     </div>
-                    <div class="form-group col-2 d-flex w-100">
+                    <div class="form-group col-4 col-md-2 d-flex w-100">
                         <label for="" class="form-label text-dark">Subcategory</label>
                         <select data-toggle="tooltip" title="Subcategory" id="subCategoryId"
                             class="form-control form-control-sm bg-outline-dark disabled"
                             style="background: transparent" type="text">
                         </select>
                     </div>
-                    <div class="form-group col-2 d-flex w-100">
+                    <div class="form-group col-4 col-md-2 d-flex w-100">
                         <label for="" class="form-label text-dark">Product</label>
                         <select data-toggle="tooltip" title="product" id="productId"
                             class="form-control form-control-sm bg-outline-dark  disabled"
                             style="background: transparent" type="text">
                         </select>
                     </div>
-                    <div class="form-group col-2 d-flex w-100">
+                    <div class="form-group col-4 col-md-2 d-flex w-100">
                         <label for="" class="form-label text-dark">Description</label>
                         <input data-toggle="tooltip" title="description" placeholder="Description" id="description"
                             class="form-control form-control-sm" type="text">
                     </div>
-                    <div class="form-group col-1 d-flex w-100">
+                    <div class="form-group col-3 col-md-1 d-flex w-100">
                         <label for="" class="form-label text-dark">Quantity</label>
                         <input data-toggle="tooltip" title="Quantity" placeholder="Quantity" id="quantity"
                             class="form-control form-control-sm  disabled" type="number">
                     </div>
-                    <div class="form-group col-1 d-flex w-100">
+                    <div class="form-group col-3 col-md-1 d-flex w-100">
                         <label for="" class="form-label text-dark">Rate</label>
                         <input data-toggle="tooltip" title="Rate" id="price" readonly placeholder="Rate(Rs)"
                             class="form-control form-control-sm " type="text">
                     </div>
-                    <div class="form-group col-2 d-flex w-100">
+                    <div class="form-group col-4 col-md-2 d-flex w-100">
                         <label for="" class="form-label text-dark">Tax type</label>
                         <select data-toggle="tooltip" title="Tax type" id="taxType"
                             class="form-control form-control-sm bg-outline-dark" style="background: transparent"
@@ -163,24 +171,24 @@
                             <option value="exclude">Exclude</option>
                         </select>
                     </div>
-                    <div class="form-group col-2 d-flex w-100">
+                    <div class="form-group col-4 col-md-2 d-flex w-100">
                         <label for="" class="form-label text-dark">Tax percentage</label>
                         <select data-toggle="tooltip" title="Tax percentage" id="taxPercentage"
                             class="form-control form-control-sm bg-outline-dark col" style="background: transparent"
                             type="text">
                         </select>
                     </div>
-                    <div class="form-group col-1 d-flex w-100">
+                    <div class="form-group col-3 col-md-1 d-flex w-100">
                         <label for="" class="form-label text-dark">Taxable</label>
                         <input data-toggle="tooltip" title="Taxable" class="form-control form-control-sm col"
                             id="taxable" readonly type="text">
                     </div>
-                    <div class="form-group col-2 d-flex w-100">
+                    <div class="form-group col-4 col-md-2 d-flex w-100">
                         <label for="" class="form-label text-dark">Tax amount</label>
                         <input data-toggle="tooltip" title="Tax amount" readonly id="taxAmount"
                             class="form-control form-control-sm col" type="text">
                     </div>
-                    <div class="form-group col-2 d-flex w-100">
+                    <div class="form-group col-4 col-md-2 d-flex w-100">
                         <label for="" class="form-label text-dark">Sub total</label>
                         <input data-toggle="tooltip" title="Sub total" id="subtotal" readonly
                             class="form-control form-control-sm col" type="text">
@@ -301,12 +309,10 @@
     $('#taxType').change(async function(e) {
         updateEverything();
     });
-
     // clear subcategories
     $('#taxPercentage').change(async function(e) {
         updateEverything();
     });
-
     // submit records
     $(document).on('click', '#createPurchaseItemForm', async (e) => {
         e.preventDefault();
@@ -318,21 +324,27 @@
         if(document?.querySelector('.editing') !== null){
             document?.querySelector('.editing').remove();
         }
-
+        if(document?.querySelector('.clearButton') !== null){
+            document?.querySelector('.clearButton').remove();
+        }
         [...document?.querySelectorAll('.validation-error')].map(item => {
             return item.classList.remove('validation-error')
         });
-
         createDOMElement(validated);
+        clearInputs();
+        getCategoryItems();
+
         return;
     });
 
     const appendEditValues = async (e, row, tr) => {
 
         const closeBtn = document.createElement('button');
-        closeBtn.className = "btn btn-sm btn-outline-success ms-2";
+        closeBtn.className = "btn btn-sm btn-outline-danger ms-2 col-1 clearButton";
         closeBtn.innerHTML = "<i class=\"fa fa-close\"></i>";
-        e.target.parentElement.appendChild(closeBtn);
+        const form = document.querySelector('.createFormRow');
+
+        form.appendChild(closeBtn);
 
         closeBtn.addEventListener('click', event => {
             tr.classList.remove('editing');
