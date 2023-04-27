@@ -339,19 +339,21 @@
 
     const appendEditValues = async (e, row, tr) => {
 
-        const closeBtn = document.createElement('button');
-        closeBtn.className = "btn btn-sm btn-outline-danger ms-2 col-1 clearButton";
-        closeBtn.innerHTML = "<i class=\"fa fa-close\"></i>";
-        const form = document.querySelector('.createFormRow');
 
-        form.appendChild(closeBtn);
+        if(!document.querySelector('.clearButton')) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = "btn btn-sm btn-outline-danger ms-2 col-1 clearButton";
+            closeBtn.innerHTML = "<i class=\"fa fa-close\"></i>";
+            const form = document.querySelector('.createFormRow');
+            form.appendChild(closeBtn);
 
-        closeBtn.addEventListener('click', event => {
-            tr.classList.remove('editing');
-            closeBtn.remove();
-            clearInputs();
-        });
-
+            closeBtn.addEventListener('click', event => {
+                tr.classList.remove('editing');
+                closeBtn.remove();
+                clearInputs();
+                getCategoryItems();
+            });
+        }
         // add values to inboxes when editted
         Object.entries(row).map((item) => {
             const el = document.querySelector("#" + item[0]); // object entries returns an array with two tiems
