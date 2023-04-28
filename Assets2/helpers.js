@@ -14,6 +14,7 @@ class Request {
 
     // main function
     try {
+      defaultReturnData.isLoading = true;
       // ajax request
       const data = await $.ajax({
         ...ajaxConfiguration,
@@ -23,7 +24,10 @@ class Request {
       defaultReturnData.isSuccess = true;
       defaultReturnData.data = data;
 
-      defaultReturnData.isLoading = false;
+      if (data.length) {
+        defaultReturnData.isLoading = false;
+      }
+
       return defaultReturnData;
     } catch (error) {
       defaultReturnData.isError = true;

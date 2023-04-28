@@ -48,8 +48,9 @@ class LogCreateListener implements ShouldQueue {
         });
     }
 
-// public function failed(\Throwable $th) {
-//     abort(500, "Something went wrong");
-// }
+    public function failed(\Throwable $th) {
+        abort(500, "Something went wrong");
+    }
+
 
 }

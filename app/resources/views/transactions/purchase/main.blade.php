@@ -62,13 +62,16 @@
         color: rgb(160, 6, 6) !important;
     }
 
-
     .createFormRow .form-group label::after {
         content: '*';
         color: lightcoral;
         font-size: .9em;
         margin-left: 4px;
         font-weight: 900;
+    }
+
+    #descriptionLabel::after {
+        content: '';
     }
 </style>
 @endsection
@@ -97,23 +100,23 @@
                     <label for="" class="mb-0 fs-14">Date <span class="text-danger fs-14">*</span></label>
                     <input @if($isEdit) value="{{ $EditData->tranDate }}" @endif class="form-control form-control-sm"
                         id="tranDate" type="date">
-                    <span class="fs-12 text-danger" data-validation data-error="tranDate"></span>
+                    <span class="fs-13 text-danger" data-validation data-error="tranDate"></span>
                 </div>
                 <div class="form-group d-flex" style="flex-direction: column">
                     <label for="" class="mb-0 fs-14">Supplier <span class="text-danger fs-14">*</span></label>
                     <select class="form-control form-control-sm" id="supplierId">
                         <option value="" selected>Select a Supplier</option>
                     </select>
-                    <span class="fs-12 text-danger" data-validation data-error="supplierId"></span>
+                    <span class="fs-13 text-danger" data-validation data-error="supplierId"></span>
                 </div>
                 <div class="form-group d-flex" style="flex-direction: column">
-                    <label for="" class="mb-0 fs-14">Payment type <span class="text-danger fs-14">*</span></label>
+                    <label for="" class="mb-0 fs-14">Mode of Payment <span class="text-danger fs-14">*</span></label>
                     <select class="form-control form-control-sm" name="" id="mop">
                         <option @if(!$isEdit) selected @endif value="">Select Payment type</option>
                         <option @if($isEdit && $EditData->mop == 'cash') selected @endif value="cash">Cash</option>
                         <option @if($isEdit && $EditData->mop == 'card') selected @endif value="card">Card</option>
                     </select>
-                    <span class="fs-10 text-danger" data-validation data-error="mop"></span>
+                    <span class="fs-13 text-danger" data-validation data-error="mop"></span>
                 </div>
                 <div class="form-group d-flex" style="flex-direction: column">
                     <label for="" class="mb-0 fs-14">Invoice Number</label>
@@ -148,7 +151,7 @@
                         </select>
                     </div>
                     <div class="form-group col-4 col-md-2 d-flex w-100">
-                        <label for="" class="form-label text-dark">Description</label>
+                        <label for="" id="descriptionLabel" class="form-label text-dark">Description</label>
                         <input data-toggle="tooltip" title="description" placeholder="Description" id="description"
                             class="form-control form-control-sm" type="text">
                     </div>
@@ -305,7 +308,7 @@
         updateEverything();
         return true;
     });
-
+    
     $('#taxType').change(async function(e) {
         updateEverything();
     });
@@ -313,6 +316,7 @@
     $('#taxPercentage').change(async function(e) {
         updateEverything();
     });
+
     // submit records
     $(document).on('click', '#createPurchaseItemForm', async (e) => {
         e.preventDefault();
@@ -330,15 +334,23 @@
         [...document?.querySelectorAll('.validation-error')].map(item => {
             return item.classList.remove('validation-error')
         });
-        createDOMElement(validated);
-        clearInputs();
-        getCategoryItems();
 
+        const parentNode = document.querySelector("#createTable");
+        const twin = parentNode.querySelector(`[data-productId=${validated?.productId}`);
+
+        if (
+            hasTwin(validated)
+        ) {
+            addToTwin(validated)
+            return true;
+        } else {
+            createDOMElement(validated);
+            return
+        }
         return;
     });
 
     const appendEditValues = async (e, row, tr) => {
-
 
         if(!document.querySelector('.clearButton')) {
             const closeBtn = document.createElement('button');
@@ -393,7 +405,6 @@
         const taxSelect = document.querySelector('#taxPercentage');
         createSelectOption(taxSelect, taxData, 'TaxPercentage', 'TaxName', tr.dataset.taxpercentage)
 
-        // floatable(tr);
         tr.classList.add("editing");
         genepriceGrandTotal();
         return true;
@@ -439,6 +450,10 @@
             supplierId: $('#supplierId').val(),
             mop: $('#mop').val()
         } // validated
+
+        if(!products.length){
+            return toastr.error('Cannot create Empty Purchase');
+        }
 
         if(!validate(validated)){
             toastr.error('Cannot create record with empty field data')

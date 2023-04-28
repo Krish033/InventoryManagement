@@ -6,6 +6,12 @@ const tooltipList = [...tooltipTriggerList].map(
   (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
 );
 
+const currency = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  useGrouping: false,
+});
+
 const createSelectOption = (parent, data, key, value, selected) => {
   // createing item
   data.map((item) => {
@@ -108,9 +114,11 @@ const validateFunction = (nodeList) => {
 
   subNodeList.map((item) => {
     if (empty(item.value)) {
-      item.classList.add("validation-error");
-      error = true;
-      return;
+      if (item.id != "description") {
+        item.classList.add("validation-error");
+        error = true;
+        return;
+      }
     }
 
     validatedArray = {
@@ -124,7 +132,6 @@ const validateFunction = (nodeList) => {
     return false;
   }
 
-  clearInputs(subNodeList);
   return validatedArray;
 };
 
@@ -151,7 +158,7 @@ const getCategoryItems = async () => {
 
 const genepriceGrandTotal = () => {
   const subtotal = requestTotalTax() + requestTotalInfo();
-  document.querySelector("#grandTotal").textContent = subtotal;
+  document.querySelector("#grandTotal").textContent = currency.format(subtotal);
   return subtotal;
 };
 
@@ -159,13 +166,14 @@ const requestTotalTax = () => {
   const totalElement = [
     ...[...document.querySelectorAll("[data-tax-subtotal-element]")].map(
       (subtotal) => {
-        return parseInt(subtotal.innerText);
+        const parent = subtotal.parentElement;
+        return parseFloat(parent.dataset.taxamount);
       }
     ),
   ];
 
   const sum = totalElement.reduce((partialSum, a) => partialSum + a, 0);
-  document.querySelector("#taxTotal").textContent = sum;
+  document.querySelector("#taxTotal").textContent = currency.format(sum);
   return sum;
 };
 
@@ -183,11 +191,12 @@ const requestTotalInfo = () => {
   const totalElement = [
     ...document.querySelectorAll("[data-subtotal-element]"),
   ].map((subtotal) => {
-    return parseInt(subtotal.innerText);
+    const parent = subtotal.parentElement;
+    return parseFloat(parent.dataset.taxable);
   });
 
   const sum = totalElement.reduce((partialSum, a) => partialSum + a, 0);
-  document.querySelector("#totalSum").textContent = sum;
+  document.querySelector("#totalSum").textContent = currency.format(sum);
   return sum;
 };
 
@@ -204,8 +213,80 @@ const getClearables = () => {
   ];
 };
 
+const hasTwin = (obj) => {
+  const parentNode = document.querySelector("#createTable");
+  const twin = parentNode.children;
+
+  let found = false;
+  [...twin].map((item) => {
+    if (
+      item.dataset.taxtype === obj.taxType &&
+      item.dataset.taxpercentage == obj.taxPercentage
+    ) {
+      found = true;
+    }
+  });
+
+  return found;
+};
+
+const getItem = (obj) => {
+  const parentNode = document.querySelector("#createTable");
+  const twin = parentNode.children;
+
+  const main = [];
+
+  [...twin].map((item) => {
+    if (
+      item.dataset.taxtype === obj.taxType &&
+      item.dataset.taxpercentage == obj.taxPercentage
+    ) {
+      main.push(item);
+    }
+  });
+
+  return main[0];
+};
+
+const addToTwin = (obj) => {
+  const parentNode = document.querySelector("#createTable");
+
+  const swalConfiguration = {
+    title: "Cannot create new Product?",
+    text: "THe product you have created has a twin!",
+    type: "warning",
+    showCancelButton: true,
+    confirmButtonClass: "btn-outline-success",
+    confirmButtonText: "Update product",
+    closeOnConfirm: true,
+  };
+
+  swal(swalConfiguration, () => {
+    const twin = getItem(obj);
+
+    // quantity
+    twin.querySelector("#item-quantity").innerText =
+      parseFloat(twin.dataset.quantity) + parseFloat(obj.quantity);
+    twin.querySelector("#item-taxable").innerText =
+      parseFloat(twin.querySelector("#item-taxable").innerText) +
+      parseFloat(obj.taxable);
+    twin.querySelector("#item-taxAmount").innerText =
+      parseFloat(twin.querySelector("#item-taxAmount").innerText) +
+      parseFloat(obj.taxAmount);
+    twin.querySelector("#item-subtotal").innerText =
+      parseFloat(twin.querySelector("#item-subtotal").innerText) +
+      parseFloat(obj.subtotal);
+    twin.querySelector("#item-description").innerText = obj?.description;
+    clearInputs();
+    getCategoryItems();
+  });
+
+  return true;
+};
+
 const createDOMElement = async (obj) => {
   const parentNode = document.querySelector("#createTable");
+
   const tr = document.createElement("tr");
   // adding lines to tr to easily get all
   tr.setAttribute("data-categoryId", obj.categoryId);
@@ -215,6 +296,7 @@ const createDOMElement = async (obj) => {
   tr.setAttribute("data-description", obj.description);
   tr.setAttribute("data-quantity", obj.quantity);
   tr.setAttribute("data-price", obj.price);
+  tr.setAttribute("data-taxType", obj.taxType);
 
   tr.setAttribute("data-taxType", obj.taxType);
   tr.setAttribute("data-taxPercentage", obj.taxPercentage);
@@ -242,10 +324,12 @@ const createDOMElement = async (obj) => {
   // category
   const description = document.createElement("td");
   description.textContent = obj.description;
+  description.setAttribute("id", "item-description");
   tr.appendChild(description);
   // category
   const qty = document.createElement("td");
   qty.textContent = obj.quantity;
+  qty.setAttribute("id", "item-quantity");
   tr.appendChild(qty);
   // category
   const price = document.createElement("td");
@@ -261,17 +345,21 @@ const createDOMElement = async (obj) => {
   tr.appendChild(taxPercentage);
   // category
   const taxable = document.createElement("td");
-  taxable.textContent = obj.taxable;
+  // qty.setAttribute("id", "item-quantity");
+  taxable.id = "item-taxable";
+  taxable.textContent = currency.format(obj.taxable);
   tr.appendChild(taxable);
 
   const taxAmount = document.createElement("td");
-  taxAmount.textContent = obj.taxAmount;
+  taxAmount.textContent = currency.format(obj.taxAmount);
+  taxAmount.id = "item-taxAmount";
   taxAmount.setAttribute("data-tax-subtotal-element", obj.taxAmount);
   tr.appendChild(taxAmount);
 
   const subtotal = document.createElement("td");
-  subtotal.textContent = obj.subtotal;
-  subtotal.setAttribute("data-subtotal-element", obj.subtotal);
+  subtotal.id = "item-subtotal";
+  subtotal.textContent = currency.format(obj.subtotal);
+  taxable.setAttribute("data-subtotal-element", obj.taxable);
   tr.appendChild(subtotal);
   // button
   const td = document.createElement("td");
@@ -289,13 +377,28 @@ const createDOMElement = async (obj) => {
   tr.appendChild(td);
 
   btn.addEventListener("click", () => {
-    tr.remove();
-    genepriceGrandTotal();
+    const swalConfiguration = {
+      title: "Are you sure?",
+      text: "Create this purchase!",
+      type: "info",
+      showCancelButton: true,
+      confirmButtonClass: "btn-outline-success",
+      confirmButtonText: "Confrim",
+      closeOnConfirm: true,
+    };
+
+    swal(swalConfiguration, () => {
+      tr.remove();
+      genepriceGrandTotal();
+    });
   });
 
   edit.addEventListener("click", (e) => appendEditValues(e, obj, tr));
 
   genepriceGrandTotal();
+  clearInputs();
+  getCategoryItems();
+
   return true;
 };
 
@@ -330,7 +433,7 @@ const clearSelectInputs = (exclude = []) => {
 };
 
 const calculateTaxAmount = (amount, taxPercentage) => {
-  return (parseInt(amount) * parseInt(taxPercentage)) / 100;
+  return (parseFloat(amount) * parseFloat(taxPercentage)) / 100;
 };
 
 const updateEverything = () => {
@@ -343,6 +446,7 @@ const updateEverything = () => {
     taxAmount = document.querySelector("#taxAmount"),
     subtotal = document.querySelector("#subtotal");
   // quantity change
+
   const quantityValue = parseFloat(quantity.value);
   if (isNaN(quantityValue)) return false;
 
@@ -357,9 +461,30 @@ const updateEverything = () => {
     isNaN(taxPercent) ? 0.0 : taxPercent
   );
   // dont calculate tax if excluded
+  if (taxtype.value == "include") {
+    if (!isNaN(taxPercent)) {
+      //formula
+      // ! GSTCalculatedTotalAmount * (100 / (100 + taxPercent))
+      const GSTCalculatedTotalAmount = calculateTaxAmount(
+        taxable.value,
+        taxPercent
+      ); // GSTCalculatedTotalAmount
+
+      const main = GSTCalculatedTotalAmount * (100 / (100 + taxPercent));
+      const subTaxable = rateValue * quantityValue; // 2500
+      taxable.value = subTaxable - main;
+      taxAmount.value = main;
+    }
+  }
+
   if (taxtype.value == "exclude") {
-    taxAmount.value = 0.0;
+    if (!isNaN(taxPercent)) {
+      // formula
+      // ! taxableValue + taxableValue * (taxPercent / 100) - taxableValue
+      taxAmount.value =
+        taxableValue + taxableValue * (taxPercent / 100) - taxableValue;
+    }
   }
   // calculating sub total
-  subtotal.value = taxableValue + parseFloat(taxAmount.value);
+  subtotal.value = parseFloat(taxable.value) + parseFloat(taxAmount.value);
 };

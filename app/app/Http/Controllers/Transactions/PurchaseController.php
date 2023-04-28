@@ -125,8 +125,8 @@ class PurchaseController extends Purchase {
         $columns = [
             ['db' => 'tranNo', 'dt' => '0'],
             ['db' => 'tranDate', 'dt' => '1'],
-            ['db' => 'supplierId', 'dt' => '2'],
-            ['db' => 'invoiceNo', 'dt' => '3'],
+            ['db' => 'invoiceNo', 'dt' => '2'],
+            ['db' => 'supplierId', 'dt' => '3'],
             ['db' => 'mop', 'dt' => '4'],
             ['db' => 'taxable', 'dt' => '5'],
             ['db' => 'taxAmount', 'dt' => '6'],
