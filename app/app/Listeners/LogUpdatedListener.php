@@ -37,7 +37,7 @@ class LogUpdatedListener implements ShouldQueue {
             "OldData" => serialize($event->updatingItem),
             "NewData" => serialize($event->updatedData),
             "UserID" => $userId,
-            "IP" => '::1'
+            "IP" => $event->ipaddress
         );
 
         // start database transactions

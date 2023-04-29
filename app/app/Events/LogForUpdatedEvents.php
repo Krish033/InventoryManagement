@@ -19,7 +19,7 @@ class LogForUpdatedEvents {
     /**
      * Create a new event instance.
      */
-    public function __construct(public $updatedData, public $table, public $id) {
+    public function __construct(public $updatedData, public $table, public $id, public $ipaddress = '::1') {
         $this->primaryKey = DB::getSchemaBuilder()->getColumnListing($table)[0];
         $this->updatingItem = (array) DB::table($table)->where($this->primaryKey, '=', $id)->get()[0];
     }

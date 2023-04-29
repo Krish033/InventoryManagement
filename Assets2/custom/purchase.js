@@ -159,6 +159,7 @@ const getCategoryItems = async () => {
 const genepriceGrandTotal = () => {
   const subtotal = requestTotalTax() + requestTotalInfo();
   document.querySelector("#grandTotal").textContent = currency.format(subtotal);
+  console.log(subtotal);
   return subtotal;
 };
 
@@ -267,20 +268,40 @@ const addToTwin = (obj) => {
     // quantity
     twin.querySelector("#item-quantity").innerText =
       parseFloat(twin.dataset.quantity) + parseFloat(obj.quantity);
-    twin.querySelector("#item-taxable").innerText =
-      parseFloat(twin.querySelector("#item-taxable").innerText) +
-      parseFloat(obj.taxable);
-    twin.querySelector("#item-taxAmount").innerText =
-      parseFloat(twin.querySelector("#item-taxAmount").innerText) +
-      parseFloat(obj.taxAmount);
-    twin.querySelector("#item-subtotal").innerText =
-      parseFloat(twin.querySelector("#item-subtotal").innerText) +
-      parseFloat(obj.subtotal);
+    twin.setAttribute(
+      "data-quantity",
+      parseFloat(twin.dataset.quantity) + parseFloat(obj.quantity)
+    );
+
+    twin.querySelector("#item-taxable").innerText = currency.format(
+      parseFloat(twin.dataset.taxable) + parseFloat(obj.taxable)
+    );
+    twin.setAttribute(
+      "data-taxable",
+      parseFloat(twin.dataset.taxable) + parseFloat(obj.taxable)
+    );
+
+    twin.querySelector("#item-taxAmount").innerText = currency.format(
+      parseFloat(twin.dataset.taxamount) + parseFloat(obj.taxAmount)
+    );
+    twin.setAttribute(
+      "data-taxAmount",
+      parseFloat(twin.dataset.taxamount) + parseFloat(obj.taxAmount)
+    );
+
+    twin.querySelector("#item-subtotal").innerText = currency.format(
+      parseFloat(twin.dataset.subtotal) + parseFloat(obj.subtotal)
+    );
+    twin.setAttribute(
+      "data-subtotal",
+      parseFloat(twin.dataset.subtotal) + parseFloat(obj.subtotal)
+    );
+
     twin.querySelector("#item-description").innerText = obj?.description;
     clearInputs();
     getCategoryItems();
+    genepriceGrandTotal();
   });
-
   return true;
 };
 

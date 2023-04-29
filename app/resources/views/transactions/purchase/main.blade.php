@@ -227,11 +227,11 @@
             </table>
 
             <div class="w-100 d-flex align-items-end mt-5" style="flex-direction: column">
-                <span class="fs-11 p-2 rounded">SubTotal: Rs. <span id="totalSum" class="h5">0.00</span></span>
-                <span class="fs-11 p-2">Tax Total: Rs. <span id="taxTotal" class="h5">0.00</span></span>
+                <span class="fs-11 p-2 rounded">SubTotal: <span id="totalSum" class="h5">0.00</span></span>
+                <span class="fs-11 p-2">Tax Total: <span id="taxTotal" class="h5">0.00</span></span>
                 <span class="fs-11 p-2 text-success"
                     style="border-top: 1px solid #000; border-bottom: 1px solid #000">Grand Total:
-                    Rs. <span id="grandTotal" class="h5">0.00</span></span>
+                    <span id="grandTotal" class="h5">0.00</span></span>
             </div>
 
             <div class="submitButtons mt-4 w-100 d-flex justify-content-end gap-2">
@@ -459,16 +459,23 @@
             toastr.error('Cannot create record with empty field data')
             return false;
         } // bundle
+
+        // getting the amount of taxable and taxAmount values by calculating it
+        const taxableCalcuation = requestTotalInfo();
+        const taxAmountCalcuation = requestTotalTax();
+
         const mainData = {
             ...validated,
             invoiceNo: $('#ivNo').val(),
-            taxable: $('#totalSum').html(),
-            taxAmount: $('#taxTotal').html(),
-            TotalAmount: $('#grandTotal').html(),
+            taxable: taxableCalcuation,
+            taxAmount: taxAmountCalcuation,
+            TotalAmount: parseFloat(taxableCalcuation) + parseFloat(taxAmountCalcuation),
             paidAmount: 0,
-            balanceAmount: $('#grandTotal').html(),
+            balanceAmount: parseFloat(taxableCalcuation) + parseFloat(taxAmountCalcuation),
             products,
         } 
+
+        console.log(mainData);
 
         // send ajax request to post the data
         const url = @if(!$isEdit) '/transactions/api/purchase/create-record' @else "/transactions/api/purchase/update-record/{{ $EditData->tranNo }}" @endif

@@ -35,7 +35,7 @@ class LogRestorelistener {
                 ->first()),
             "NewData" => serialize($event->logRecordRestore),
             "UserID" => $userId,
-            "IP" => '::1'
+            "IP" => $event->ipaddress
         ); // start database transactions
 
         DB::transaction(function () use ($logData, $event) {

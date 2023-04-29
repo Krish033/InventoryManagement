@@ -17,7 +17,7 @@ class LogForDeletedEvents {
     /**
      * Create a new event instance.
      */
-    public function __construct(public $logRecordDeleted, public $table) {
+    public function __construct(public $logRecordDeleted, public $table, public $ipaddress = '::1') {
         $this->primaryKey = Arr::first(DB::getSchemaBuilder()->getColumnListing($table));
         // dd($this->primaryKey);
     }

@@ -867,4 +867,5 @@ th span.remarks {
 
 .btn-outline-light {
   color: #000 !important;
+  /* background-attachment: fixed; */
 }

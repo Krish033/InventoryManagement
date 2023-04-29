@@ -39,7 +39,7 @@ class LogCreateListener implements ShouldQueue {
             "OldData" => "",
             "NewData" => serialize($event->logRecordCreated),
             "UserID" => $userId,
-            "IP" => '::1'
+            "IP" => $event->ipaddress
         ); // start database transactions
         DB::transaction(function () use ($logData, $event) {
             (new logController())->Store($logData); // storing the log data

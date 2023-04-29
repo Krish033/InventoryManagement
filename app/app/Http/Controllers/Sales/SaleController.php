@@ -523,7 +523,7 @@ class SaleController extends Controller {
             ...$formFields,
             'saId' => (new DocNum())->getDocNum('Sales'),
             'created_by' => auth()->user()->UserID
-        ], self::table);
+        ], self::table, $request->ip());
 
         (new DocNum())->updateDocNum('Sales');
 

@@ -35,7 +35,7 @@ class LodDeletedListener {
                 ->first()),
             "NewData" => serialize($event->logRecordDeleted),
             "UserID" => $userId,
-            "IP" => '::1'
+            "IP" => $event->ipaddress
         );
 
         // start database transactions

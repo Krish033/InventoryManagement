@@ -225,11 +225,11 @@ class PurchaseController extends Purchase {
                     'created_at' => now(),
                 ]; // updating docnum
                 $this->docNum->updateDocNum('PurchasedItems'); // updating documnet number
-                LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details');
+                LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details', );
             }); // making it a collection to use the map function
 
             // create logs, create Data
-            LogForStoredEvent::dispatch($data, 'tbl_purchase_head');
+            LogForStoredEvent::dispatch($data, 'tbl_purchase_head', $request->ip());
             $this->docNum->updateDocNum(self::docName); // updating documnet number
             DB::commit(); // commiting the database trans -> doesnt required usually, the events contain commit itself
         });
@@ -280,7 +280,7 @@ class PurchaseController extends Purchase {
                 ->delete();
 
             // creating purchasedItems
-            collect($request->products)->map(function ($item) use ($tranNo) {
+            collect($request->products)->map(function ($item) use ($tranNo, $request) {
                 $itemNumber = $this->docNum->getDocNum('PurchasedItems');
                 // udating data
                 $purchaseData = [
@@ -291,7 +291,7 @@ class PurchaseController extends Purchase {
                 ]; // updating docnum
 
                 $this->docNum->updateDocNum('PurchasedItems'); // updating documnet number
-                LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details');
+                LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details', $request->ip());
             }); // making it a collection to use the map function
 
             // create logs, create Data

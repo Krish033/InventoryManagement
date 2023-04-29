@@ -15,7 +15,7 @@ class LogForStoredEvent {
     /**
      * Create a new event instance.
      */
-    public function __construct(public $logRecordCreated, public $table) {
+    public function __construct(public $logRecordCreated, public $table, public $ipaddress = '::1') {
         $this->primaryKey = DB::getSchemaBuilder()->getColumnListing($table)[0];
     }
 
