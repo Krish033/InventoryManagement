@@ -296,7 +296,6 @@ class PurchaseController extends Purchase {
 
             // create logs, create Data
             LogForUpdatedEvents::dispatch($data, 'tbl_purchase_head', $tranNo);
-            // $this->docNum->updateDocNum(self::docName); // updating documnet number
             DB::commit(); // commiting the database trans -> doesnt required usually, the events contain commit itself
         });
         return response()->json(['status' => true, 'message' => 'Purchase Updated Successfully']);

@@ -78,6 +78,13 @@
                     <div class="form-group row">
                         {{-- Max Quantity --}}
                         <div class="form-group col-md">
+                            <label for="address">HSN / SAC code</label>
+                            <input class="form-control" type="number" @if($isEdit==true)
+                                value="{{ !is_null($EditData->hsn_sac_code) ? $EditData->hsn_sac_code : 0 }}" @endif
+                                id="hsn_sac_code" placeholder="HSN / SAC code">
+                        </div>
+                        {{-- Max Quantity --}}
+                        <div class="form-group col-md">
                             <label for="address">Max Quantity</label>
                             <input class="form-control" type="number" @if($isEdit==true)
                                 value="{{ $EditData->maxQuantity }}" @endif id="maxQuantity" placeholder="Max quantity">
@@ -281,6 +288,15 @@
 		Object.entries(validated).map(valid => {
 			form.append(valid[0], valid[1]);
 		});
+
+        const hsn = $("#hsn_sac_code").val();
+
+        if(hsn != "" && hsn <= 99999){
+            toastr.error("Please enter a valid HSN/SAC code");
+            return false;
+        }
+
+        form.append('hsn_sac_code', $("#hsn_sac_code").val())
         
 		$.ajax({ // Ajax form submit
 			type: "post",

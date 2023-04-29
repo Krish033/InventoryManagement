@@ -43,6 +43,7 @@
                                         <th class="text-center">Category</th>
                                         <th class="text-center">Subcategory</th>
                                         <th class="text-center">Tax</th>
+                                        <th class="text-center">HSN/SAC</th>
                                         <th class="text-center">Max</th>
                                         <th class="text-center">Min</th>
                                         <th class="text-center">Purchase rate</th>

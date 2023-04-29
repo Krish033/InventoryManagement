@@ -83,14 +83,15 @@ class ProductController extends Controller {
                 array('db' => 'categoryId', 'dt' => '2'),
                 array('db' => 'subCategoryId', 'dt' => '3'),
                 array('db' => 'taxId', 'dt' => '4'),
-                array('db' => 'maxQuantity', 'dt' => '5'),
-                array('db' => 'minQuantity', 'dt' => '6'),
-                array('db' => 'salesRate', 'dt' => '7'),
-                array('db' => 'purchaseRate', 'dt' => '8'),
+                array('db' => 'hsn_sac_code', 'dt' => '5'),
+                array('db' => 'maxQuantity', 'dt' => '6'),
+                array('db' => 'minQuantity', 'dt' => '7'),
+                array('db' => 'salesRate', 'dt' => '8'),
+                array('db' => 'purchaseRate', 'dt' => '9'),
 
                 array(
                     'db' => 'is_active',
-                    'dt' => '9',
+                    'dt' => '10',
                     'formatter' => function ($d, $row) {
                         if ($d == "1") {
                             return "<span class='badge badge-success m-1'>Active</span>";
@@ -101,7 +102,7 @@ class ProductController extends Controller {
                 ),
                 array(
                     'db' => self::primaryKey,
-                    'dt' => '10',
+                    'dt' => '11',
                     'formatter' => function ($d, $row) {
                         $html = '';
                         if ($this->general->isCrudAllow($this->CRUD, "edit") == true) {
@@ -168,13 +169,14 @@ class ProductController extends Controller {
                 array('db' => 'categoryId', 'dt' => '2'),
                 array('db' => 'subCategoryId', 'dt' => '3'),
                 array('db' => 'taxId', 'dt' => '4'),
-                array('db' => 'maxQuantity', 'dt' => '5'),
-                array('db' => 'minQuantity', 'dt' => '6'),
-                array('db' => 'salesRate', 'dt' => '7'),
-                array('db' => 'purchaseRate', 'dt' => '8'),
+                array('db' => 'hsn_sac_code', 'dt' => '5'),
+                array('db' => 'maxQuantity', 'dt' => '6'),
+                array('db' => 'minQuantity', 'dt' => '7'),
+                array('db' => 'salesRate', 'dt' => '8'),
+                array('db' => 'purchaseRate', 'dt' => '9'),
                 array(
                     'db' => 'is_active',
-                    'dt' => '9',
+                    'dt' => '10',
                     'formatter' => function ($d, $row) {
                         if ($d == "1") {
                             return "<span class='badge badge-success m-1'>Active</span>";
@@ -185,7 +187,7 @@ class ProductController extends Controller {
                 ),
                 array(
                     'db' => self::primaryKey,
-                    'dt' => '10',
+                    'dt' => '11',
                     'formatter' => function ($d, $row) {
                         $html = '<button type="button" data-id="' . $d . '" class="btn btn-outline-success btn-sm  m-2 btnRestore"> <i class="fa fa-repeat" aria-hidden="true"></i> </button>';
                         return $html;
@@ -286,6 +288,7 @@ class ProductController extends Controller {
                     "maxQuantity" => $req->maxQuantity,
                     "minQuantity" => $req->minQuantity,
                     "purchaseRate" => $req->purchaseRate,
+                    "hsn_sac_code" => $req->hsn_sac_code,
                     "salesRate" => $req->salesRate,
                     "is_active" => $req->is_active,
                     "dflag" => 0,
