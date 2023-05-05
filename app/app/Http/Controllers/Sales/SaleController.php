@@ -9,10 +9,12 @@ use App\Events\LogForUpdatedEvents;
 use App\Http\Controllers\Controller;
 
 use App\Http\Controllers\logController;
+use App\Http\Requests\MainSaleRequest;
 use App\Models\DocNum;
 use App\Models\general;
 use App\Models\ServerSideProcess;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -38,12 +40,12 @@ class SaleController extends Controller {
     /**
      * Tabel name to use
      */
-    protected const table = "tbl_sales";
+    protected const table = "tbl_sales_head";
 
     /**
      * Primary id for the Table
      */
-    protected const primaryId = "saId";
+    protected const primaryId = "tranNo";
 
     /**
      * Use this document number
@@ -108,26 +110,6 @@ class SaleController extends Controller {
         ]);
     }
 
-
-    protected function getSalesRunningStatus($d) {
-
-        $isSalesRunning = DB::table(self::table)
-            ->where(self::primaryId, $d)
-            ->first();
-
-        $running = 'Not started';
-
-        if (!is_null($isSalesRunning->start)) {
-            $running = 'Started';
-        }
-
-        if (!is_null($isSalesRunning->end)) {
-            $running = "Ended";
-        }
-
-        return $running;
-    }
-
     /**
      * Fetch table resource
      */
@@ -138,53 +120,17 @@ class SaleController extends Controller {
 
         $columns = [
             ['db' => self::primaryId, 'dt' => '0'],
-            ['db' => 'date', 'dt' => '1'],
-            ['db' => self::primaryId, 'dt' => '2', "formatter" => function ($d, $row) {
-                $item = DB::table(self::table)
-                    ->where(self::primaryId, '=', $d)
-                    ->pluck('completed')
-                    ->first();
+            ['db' => 'tranDate', 'dt' => '1'],
+            ['db' => 'customerId', 'dt' => '2'],
+            ['db' => 'mop', 'dt' => '3'],
+            ['db' => 'taxable', 'dt' => '4'],
+            ['db' => 'taxAmount', 'dt' => '5'],
+            ['db' => 'totalAmount', 'dt' => '6'],
+            ['db' => 'paidAmount', 'dt' => '7'],
+            ['db' => 'balanceAmount', 'dt' => '8'],
 
-                $disable = boolval(intval($item));
-                return !$disable
-                    ? "<button class=\"btn btn-sm btn-outline-success markSaleAsCompleted\" data-id=" . $d . ">
-                            <i class=\"fa fa-check\"></i> Complete
-                        </button>"
-                    : "
-                    <button class=\"btn btn-sm btn-outline-primary markSaleAsCompleted\" data-id=" . $d . ">
-                            <i class=\"fa fa-exclamation\"></i> Pending
-                    </button>";
-            }],
-
-            ['db' => self::primaryId, 'dt' => '3', "formatter" => function ($d) {
-
-                $item = DB::table(self::table)
-                    ->where(self::primaryId, $d)
-                    ->first();
-
-                $element = is_null($item->start)
-                    ? "<button class=\"btn btn-sm btn-outline-dark startSale\" data-id=" . $item->saId . ">
-                            <i class=\"fa fa-check\"></i> Start
-                        </button>"
-                    : "
-                    <button disabled class=\"btn btn-sm btn-outline-dark startSale\" data-id=" . $item->saId . ">
-                            <i class=\"fa fa-check\"></i> Start
-                    </button>";
-
-                $element .= is_null($item->end) && !is_null($item->start)
-                    ? "<button class=\"btn btn-sm btn-outline-danger ms-2 endSale\" data-id=" . $item->saId . ">
-                            <i class=\"fa fa-close\"></i> End
-                        </button>"
-                    : "
-                    <button disabled class=\"btn btn-sm btn-outline-danger ms-2 endSale\" data-id=" . $item->saId . ">
-                            <i class=\"fa fa-close\"></i> End
-                    </button>";
-
-                return $element;
-            }],
-
-            ['db' => 'created_by', 'dt' => '4'],
-            ['db' => self::primaryId, 'dt' => '5', "formatter" => function ($d) {
+            ['db' => 'createdBy', 'dt' => '9'],
+            ['db' => self::primaryId, 'dt' => '10', "formatter" => function ($d) {
                 return "
                 <a 
                     href=" . route('sales.update', $d) . "
@@ -195,17 +141,6 @@ class SaleController extends Controller {
                 >
                     <i class=\"fa fa-pencil\" aria-hidden=\"true\"></i>
                 </a>
-
-                <a
-                    href=" . route('sales.single.home', $d) . "
-                    type=\"button\" 
-                    data-id=" . $d . "
-                    class=\"btn btn-outline-success btn-sm editSale\" 
-                    data-original-title=\"Edit\"
-                >
-                    <i class=\"fa fa-plus\" aria-hidden=\"true\"></i>
-                </a>
-
                 <button 
                     type=\"button\" 
                     data-id=" . $d . " 
@@ -230,259 +165,67 @@ class SaleController extends Controller {
         ]);
     }
 
-    /**
-     * Get the Statistics
-     * @param string $saId
-     * @return \Illuminate\Support\Collection
-     */
-    protected function getItemsStats(string $saId) {
-        $sales = (array) DB::table('tbl_sales')
-            ->where('saId', $saId)
-            ->get()
-            ->toArray()[0];
-
-        $salesItemsBuilder = DB::table('tbl_sales_items')
-            ->where('saId', $saId) // array
-            ->where('dflag', 0);
-
-        // dd($salesItemsBuilder->get());
-
-        $salesCount = $salesItemsBuilder->count();
-
-        $salesItemsPrice = $this->getSaleItemPrice($salesItemsBuilder, 'amount'); // totalled amount
-        // tax record
-        $taxInPercentage = $this->getTaxRecord($sales['tax_id']);
-        // calculating gst formula = (totalAmount * gst percent) / 100 
-        $taxable = (intval($salesItemsPrice) * intval($taxInPercentage->TaxPercentage)) / 100; // get taxable 
-
-        return collect([
-            'tax' => $taxInPercentage->TaxPercentage,
-            'sales' => $sales,
-            'calculatedPriceTotal' => $salesItemsPrice,
-            'calculatedPriceTotalIncludingGST' => intval($taxable + $salesItemsPrice),
-            'salesCount' => $salesCount,
-        ]);
-    }
 
     /**
-     * To return stats to api view
-     * @param string $saId
-     * @return \Illuminate\Http\JsonResponse
+     * Query builder for Tax records
+     * @return Builder
      */
-    public function stats(string $saId) {
-        $itemStats = $this->getItemsStats($saId);
-        // dd($itemStats);
-        return response()->json($itemStats->toArray());
-    }
-
-    /**
-     * get tax record Api
-     * @return array
-     */
-    public function taxes() {
+    protected function taxBuilder() {
         return DB::table('tbl_tax')
             ->where('DFlag', 0)
-            ->get()
-            ->toArray();
+            ->where('ActiveStatus', 1);
     }
 
     /**
-     * Assign tax to Elements
-     * @param Request $request
-     * @param string $saId
-     * @return \Illuminate\Http\JsonResponse
+     * Get All tax
+     * @return void
      */
-    public function recordTax(Request $request, string $saId) {
-        if (!$this->can('edit')) {
-            // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
-        }
-
-        // checking if tax record exists
-        $tax = DB::table('tbl_tax')
-            ->where('TaxID', '=', $request->tax_id)
-            ->count() > 0;
-
-        if (!$tax) {
-            return response()->json(['message' => 'Tax not found'], 404);
-        }
-        // assign tax record
-        $purchase = (array) DB::table(self::table)
-            ->where(self::primaryId, $saId)
-            ->get()
-            ->toArray()[0];
-
-        // spreading the data to assign tax id
-        $data = [
-            ...$purchase, // get the purchase
-            'tax_id' => $request->tax_id,
-        ];
-
-        LogForUpdatedEvents::dispatch($data, self::table, $saId);
-        return response()->json(['message' => 'Tax assigned successfully'], 200);
+    public function taxes() {
+        $this->taxBuilder()
+            ->get(['TaxName', 'TaxPercentage', 'TaxID']);
     }
 
     /**
-     * Update auto update payments
-     * @param Request $request
-     * @param string $saId
-     * @return \Illuminate\Http\JsonResponse
+     * Get a Single Tax
+     * @param mixed $taxId
+     * @return void
      */
-    public function autoUpdatePayments(Request $request, string $saId) {
-        $integerValue = $request->auto_update_payment == "true"
-            ? 1 // true
-            : 0; // if set to true the paymnet can be updated by a single button
-
-        DB::table(self::table)
-            ->where(self::primaryId, '=', $saId)
-            ->update(['auto_update_payment' => $integerValue]);
-
-        return response()->json(['message' => 'Updated auto update payments']);
+    public function tax(string $taxId) {
+        $this->taxBuilder()
+            ->when('TaxID', $taxId)
+            ->first(['TaxName', 'TaxPercentage', 'TaxID']);
     }
 
-    protected function getTaxRecord(string $taxId) {
-        return DB::table('tbl_tax')
-            ->where('TaxID', $taxId)
+
+    /**
+     * Query builder for Tax records
+     * @return Builder
+     */
+    protected function productsBuilder(string $productId) {
+        return DB::table('tbl_products')
+            ->where('dflag', 0)
+            ->where('is_active', 1)
+            ->where('pid', $productId);
+    }
+
+    /**
+     * Get All tax
+     * @return void
+     */
+    public function products(string $scid) {
+        $this->productsBuilder($scid)
+            ->get();
+    }
+
+    /**
+     * Get a single Product item
+     * @param mixed $pid
+     * @return void
+     */
+    public function product(string $pid) {
+        $this->productsBuilder($pid)
             ->first();
     }
-
-    /**
-     * Summary of getSaleItem
-     * @param string $siId
-     * @return \Illuminate\Database\Query\Builder
-     */
-    protected function getSaleItem(string $siId) {
-        return DB::table('tbl_sold_products')
-            ->where('siId', $siId);
-    }
-
-    /**
-     * Summary of getSaleItemPrice
-     * @param Builder $data
-     * @return mixed
-     */
-    protected function getSaleItemPrice(Builder $data, string $column = 'salesRate') {
-        $array = $data->pluck($column)->toArray();
-        return array_sum($array);
-    }
-
-    public function createPaymentRecords(string $saId) {
-
-        $salesStats = $this->getItemsStats($saId);
-        // getting tax record
-        if (!$salesStats['sales']['tax_id']) {
-            return response()->json(['message' => "Select a tax record!"], 500);
-        }
-
-        // find payments 
-        $paymentRecordExists = (array) DB::table('tbl_payments')
-            ->where('reference_id', '=', $saId)
-            ->first();
-
-        // can be edited
-        $itemIsEditable = empty($paymentRecordExists);
-
-        // not found
-        if ($itemIsEditable == true) {
-            $paymentRecordExists = [
-                "pyid" => (new DocNum())->getDocNum('Payments'),
-            ];
-            // updating docnum
-            (new DocNum())->updateDocNum('Payments');
-        }
-
-        // record need to be uploaded
-        $updatedPaymentRecord = [
-            ...$paymentRecordExists,
-            "date" => $salesStats['sales']['date'],
-            "description" => "sold items",
-            "category" => "sales",
-            "amount" => $salesStats['calculatedPriceTotal'],
-            "payment_type" => "income",
-            "deleted_by" => 'admin',
-            "dflag" => 0,
-            'tax_amount' => $salesStats['calculatedPriceTotalIncludingGST'],
-            "created_at" => now(),
-            "updated_at" => now(),
-            "reference_id" => $saId
-        ];
-
-        if ($itemIsEditable == true) { // create that item
-            DB::table('tbl_payments')
-                ->insert($updatedPaymentRecord);
-            return response()->json(['message' => "Payment records created"], 201);
-        }
-
-        // update that item
-        DB::table('tbl_payments')
-            ->where('reference_id', '=', $saId)
-            ->update($updatedPaymentRecord);
-        return response()->json(['message' => "Payment records updated"], 202);
-    }
-
-    /**
-     * Set item to completed
-     * @param string $saId
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function setCompleted(string $saId) {
-
-        $completed = DB::table(self::table)
-            ->where(self::primaryId, $saId)
-            ->pluck('completed')
-            ->first();
-
-        $completed = !boolval($completed);
-
-        //item
-        $item = DB::table(self::table)
-            ->where(self::primaryId, '=', $saId)
-            ->update(['completed' => $completed]);
-        // error
-        if (!$item) {
-            return response()->json(['message' => 'Item not found'], 500);
-        }
-        // main
-        return response()->json(['message' => 'Action updated successfully'], 202);
-    }
-
-    /**
-     * Start sale
-     * @param string $saId
-     * @return \Illuminate\Http\JsonResponse
-     */
-
-    public function startSale(string $saId) {
-
-        //item
-        $item = DB::table(self::table)
-            ->where(self::primaryId, $saId)
-            ->update(['start' => now()]);
-        // error
-        if (!$item) {
-            return response()->json(['message' => 'Item not found'], 500);
-        }
-        // main
-        return response()->json(['message' => 'Sale Started'], 202);
-    }
-
-    /**
-     * End sale
-     * @param string $saId
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function endSale(string $saId) {
-        //item
-        $item = DB::table(self::table)
-            ->where(self::primaryId, $saId)
-            ->update(['end' => now()]);
-        // error
-        if (!$item) {
-            return response()->json(['message' => 'Item not found'], 500);
-        }
-        // main
-        return response()->json(['message' => 'Sale Ended'], 202);
-    }
-
 
     /**
      * Show the form for creating a new resource.
@@ -506,26 +249,43 @@ class SaleController extends Controller {
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) {
+    public function store(MainSaleRequest $request) {
 
         if (!$this->can('add')) {
             // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
-        // validating request since nly less number of fields
-        $formFields = $request->validate([
-            'date' => 'required',
-            'start' => 'nullable',
-            'end' => 'nullable'
-        ]);
+        // create doucment number
+        $documentNumber = $this->docNum->getDocNum(self::docName);
+        // main data to be introduced
+        $data = [
+            ...$request->except(['products']),
+            'tranNo' => $documentNumber,
+            'createdBy' => auth()->user()->UserID
+        ];
 
-        LogForStoredEvent::dispatch([
-            ...$formFields,
-            'saId' => (new DocNum())->getDocNum('Sales'),
-            'created_by' => auth()->user()->UserID
-        ], self::table, $request->ip());
+        // start the transactions
+        DB::transaction(function () use ($request, $documentNumber, $data) {
+            // creating purchasedItems
+            collect($request->products)->map(function ($item) use ($documentNumber) {
+                // ! the collection does not return anything
+                $itemNumber = $this->docNum->getDocNum('SalesItem');
+                // udating data
+                $purchaseData = [
+                    ...$item, // single product
+                    'detailId' => $itemNumber,
+                    'tranNo' => $documentNumber,
+                    'created_at' => now(),
+                ]; // updating docnum
+                $this->docNum->updateDocNum('SalesItem'); // updating document number
+                LogForStoredEvent::dispatch($purchaseData, 'tbl_sales_details', );
+            }); // making it a collection to use the map function
 
-        (new DocNum())->updateDocNum('Sales');
+            // create logs, create Data
+            LogForStoredEvent::dispatch($data, self::table, $request->ip());
+            $this->docNum->updateDocNum(self::docName); // updating documnet number
+            DB::commit(); // commiting the database trans -> doesnt required usually, the events contain commit itself
+        });
 
         return response()->json(['message' => "Sale created successfully"], 201);
     }
@@ -555,23 +315,43 @@ class SaleController extends Controller {
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $saId) {
+    public function update(Request $request, string $tranNo) {
         if (!$this->can('edit')) {
             // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
-        // validating request since nly less number of fields
-        $formFields = $request->validate([
-            'date' => 'nullable',
-            'start' => 'nullable',
-            'end' => 'nullable'
-        ]);
+        $data = [
+            ...$request->except(['products']),
+            'updatedBy' => auth()->user()->UserID,
+            'updatedAt' => now()
+        ];
 
-        LogForUpdatedEvents::dispatch([
-            ...$formFields,
-            'updated_by' => auth()->user()->UserID
-        ], self::table, $saId);
+        // start the transactions
+        DB::transaction(function () use ($tranNo, $request, $data) {
+            // delete previously made products
+            DB::table('tbl_sales_details')
+                ->where('tranNo', $tranNo)
+                ->delete();
 
+            // creating purchasedItems
+            collect($request->products)->map(function ($item) use ($tranNo, $request) {
+                $itemNumber = $this->docNum->getDocNum('SalesItem');
+                // udating data
+                $purchaseData = [
+                    ...$item, // single product
+                    'detailId' => $itemNumber,
+                    'tranNo' => $tranNo,
+                    'created_at' => now(),
+                ]; // updating docnum
+
+                $this->docNum->updateDocNum('SalesItem'); // updating documnet number
+                LogForStoredEvent::dispatch($purchaseData, 'tbl_sales_details', $request->ip());
+            }); // making it a collection to use the map function
+
+            // create logs, create Data
+            LogForUpdatedEvents::dispatch($data, self::table, $tranNo);
+            DB::commit(); // commiting the database trans -> doesnt required usually, the events contain commit itself
+        });
 
         return response()->json(['message' => "Sale updated successfully"], 201);
     }
@@ -580,8 +360,9 @@ class SaleController extends Controller {
      * Remove the specified resource from storage.
      */
     public function trash() {
+
         if (!$this->can('delete')) {
-            abort(401, "Un Authorized");
+            // abort(401, "Un Authorized");
         }
 
         return view(self::views . ".trash", [
@@ -594,6 +375,15 @@ class SaleController extends Controller {
     }
 
     /**
+     * Item has lenght
+     * @param mixed $arr
+     * @return bool
+     */
+    protected function hasLength(array $arr) {
+        return count($arr) > 0;
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $saId) {
@@ -601,16 +391,17 @@ class SaleController extends Controller {
             return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
-        $item = (array) DB::table(self::table)
+        $databaseDeletionData = (array) DB::table(self::table)
             ->where(self::primaryId, $saId)
             ->get()
             ->toArray()[0];
 
-        if (is_null($item)) {
-            return response()->json(['message' => "Item not found"], 500);
+        if (!$this->hasLength($databaseDeletionData)) {
+            return response()->json(['status' => false, 'message' => 'Database record not found']);
         }
+
         // dispatching delete
-        LogForDeletedEvents::dispatch($item, self::table);
+        LogForDeletedEvents::dispatch($databaseDeletionData, self::table);
         return response()->json(['message' => "Sale deleted Successfully"], 202);
     }
 
@@ -624,16 +415,17 @@ class SaleController extends Controller {
 
         $columns = [
             ['db' => self::primaryId, 'dt' => '0'],
-            ['db' => 'date', 'dt' => '1'],
-            ['db' => 'completed', 'dt' => '2', "formatter" => function ($d, $row) {
-                $disable = boolval(intval($d));
-                return !$disable
-                    ? "Completed"
-                    : "Incomplete";
-            }],
+            ['db' => 'tranDate', 'dt' => '1'],
+            ['db' => 'customerId', 'dt' => '2'],
+            ['db' => 'mop', 'dt' => '3'],
+            ['db' => 'taxable', 'dt' => '4'],
+            ['db' => 'taxAmount', 'dt' => '5'],
+            ['db' => 'totalAmount', 'dt' => '6'],
+            ['db' => 'paidAmount', 'dt' => '7'],
+            ['db' => 'balanceAmount', 'dt' => '8'],
 
-            ['db' => 'deleted_by', 'dt' => '3'],
-            ['db' => self::primaryId, 'dt' => '4', "formatter" => function ($d, $row) {
+            ['db' => 'createdBy', 'dt' => '9'],
+            ['db' => self::primaryId, 'dt' => '10', "formatter" => function ($d, $row) {
                 return "
                 <button 
                     type=\"button\" 
@@ -669,18 +461,19 @@ class SaleController extends Controller {
             return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
         // fetching item
-        $item = (array) DB::table(self::table)
+        $dataToRestore = (array) DB::table(self::table)
             ->where('dflag', 1)
             ->where(self::primaryId, $saId)
             ->get()
             ->toArray()[0];
 
         // not found
-        if (is_null($item)) {
-            return response()->json(['message' => "Item not found"], 500);
+        if ($this->hasLength($dataToRestore)) {
+            return response()->json(['message' => "Database record does not exists"], 409);
         }
+
         // dispatching delete
-        LogForRestoredEvents::dispatch($item, self::table);
+        LogForRestoredEvents::dispatch($dataToRestore, self::table);
         return response()->json(['message' => "Sale restored Successfully"], 201);
     }
 }

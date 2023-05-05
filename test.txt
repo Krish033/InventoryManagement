@@ -1,0 +1,30 @@
+
+// transactions/payments
+// Sales controller
+Route::controller(PaymentController::class)->group(function () {
+    Route::get('/transactions/payments', 'index')->name('payment.home');
+    Route::post('/transactions/api/payments/home', 'homeApi')->name('payment.home.api');
+    Route::get('/transactions/payments/trash', 'trash')->name('payment.trash');
+    Route::post('/transactions/api/payments/trash', 'trashApi')->name('payment.trash.api');
+
+    Route::get('/transactions/payment/{pyid}', 'payment')->name('payment.single');
+
+    Route::get('/transactions/payments/create', 'create')->name('payment.create');
+    Route::post('/transactions/payments/create', 'store');
+
+    Route::get('/transactions/payments/update/{pyid}', 'edit')->name('payment.update'); // edit
+    Route::post('/transactions/payments/update/{pyid}', 'update');
+
+    Route::post('/transactions/payments/delete/{pyid}', 'destroy')->name('payment.delete');
+    Route::get('/transactions/payments/restore/{pyid}', 'restore')->name('payment.restore'); // edit
+
+    Route::get('/transactions/payments/update-payments/{pyid}', 'updatePayments')->name('payment.update.payments'); // edit
+});
+
+
+Route::controller(PaymentItemController::class)->group(function () {
+    Route::post('/transactions/payments/item/create/{pyid}', 'store')->name('payment.item.create');
+    Route::post('/transactions/payments/api/item/list/{pyid}', 'homeApi')->name('payment.item.home');
+    Route::post('/transactions/payments/item/delete/{pyid}', 'destroy')->name('payment.item.delete');
+    Route::get('/transactions/payments/item/stats/{pyid}', 'stats')->name('payment.item.stats');
+});
