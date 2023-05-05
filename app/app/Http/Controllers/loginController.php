@@ -28,7 +28,7 @@ class loginController extends Controller {
             }
         } else {
             $return['message'] = 'login failed';
-            $return['email'] = 'User name does not exists. please verify user name.';
+            $return['email'] = 'User name does not exists. please verify user name';
         }
         return $return;
     }

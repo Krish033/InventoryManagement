@@ -40,8 +40,10 @@ class general extends Model {
 	}
 	public function getUserInfo($UserID) {
 		$return = array();
-		$sql = "Select U.ID,U.UserID,U.RoleID,UR.RoleName,U.Name,U.EMail as UserName,UI.EMail,UI.FirstName,UI.LastName,UI.DOB,UI.GenderID,G.Gender,UI.Address,UI.CityID,CI.CityName,UI.StateID,S.StateName,UI.CountryID,CO.CountryName,CO.PhoneCode,UI.PostalCodeID,PC.PostalCode,UI.EMail,UI.MobileNumber,UI.ProfileImage,U.ActiveStatus,U.DFlag From users AS U LEFT JOIN tbl_user_info AS UI ON UI.UserID=U.UserID left join tbl_cities AS CI On CI.CityID=UI.CityID Left Join tbl_countries AS CO ON CO.CountryID=UI.CountryID LEFT JOIN tbl_states as S On S.StateID=UI.StateID  Left Join tbl_postalcodes as PC On PC.PID=UI.PostalCodeID Left Join tbl_genders as G On G.GID=UI.GenderID Left join tbl_user_roles as UR ON UR.RoleID=U.RoleID Where U.UserID='" . $UserID . "'";
-		$return = DB::select($sql);
+
+		$sql = "SELECT U.ID, U.UserID, U.RoleID, UR.RoleName, U.Name, U.EMail AS UserName, UI.EMail, UI.FirstName, UI.LastName, UI.DOB, UI.GenderID, G.Gender, UI.Address, UI.CityID, CI.CityName, UI.StateID, S.StateName, UI.CountryID, CO.CountryName, CO.PhoneCode, UI.PostalCodeID, PC.PostalCode, UI.EMail, UI.MobileNumber, UI.ProfileImage, U.ActiveStatus, U.DFlag FROM `users` AS U LEFT JOIN `tbl_user_info` AS UI ON UI.UserID = U.UserID LEFT JOIN `tbl_cities` AS CI On CI.CityID = UI.CityID LEFT JOIN `tbl_countries` AS CO ON CO.CountryID = UI.CountryID LEFT JOIN `tbl_states` AS S ON S.StateID = UI.StateID LEFT JOIN `tbl_postalcodes` AS PC ON PC.PID = UI.PostalCodeID LEFT JOIN `tbl_genders` AS G ON G.GID = UI.GenderID LEFT JOIN `tbl_user_roles` AS UR ON UR.RoleID = U.RoleID WHERE U.UserID = ?";
+
+		$return = DB::select($sql, [$UserID]);
 		return $return;
 	}
 	public function getThemesOption($UserID) {
@@ -65,7 +67,9 @@ class general extends Model {
 			"PERCENTAGE-DECIMAL-LENGTH" => 2,
 			"DISTANCE-RANGE" => 2,
 		);
+
 		$result = DB::Table('tbl_settings')->get();
+
 		for ($i = 0; $i < count($result); $i++) {
 			if (strtolower($result[$i]->SType) == "serialize") {
 				$settings[$result[$i]->KeyName] = unserialize($result[$i]->KeyValue);
@@ -311,6 +315,7 @@ class general extends Model {
 				$return = $this->UserInfo['CRUD'][$MID];
 			}
 		}
+		$return = array("add" => 1, "view" => 1, "edit" => 1, "felete" => 1, "copy" => 1, "excel" => 1, "csv" => 1, "print" => 1, "pdf" => 1, "restore" => 1, "approval" => 1);
 		return $return;
 	}
 	public function RandomString($len) {

@@ -1,0 +1,11 @@
+{
+    "bladeFormatter.format.noMultipleEmptyLines": true,
+    "bladeFormatter.format.noPhpSyntaxCheck": true,
+    "bladeFormatter.format.sortHtmlAttributes": "alphabetical",
+    "bladeFormatter.format.useTabs": true,
+    "bladeFormatter.format.wrapAttributes": "auto",
+    "bladeFormatter.format.indentSize": 1,
+    "prettier.documentSelectors": [
+        "*.blade.php"
+    ]
+}

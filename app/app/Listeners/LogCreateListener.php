@@ -47,10 +47,4 @@ class LogCreateListener implements ShouldQueue {
             DB::commit();
         });
     }
-
-    public function failed(\Throwable $th) {
-        abort(500, "Something went wrong");
-    }
-
-
 }

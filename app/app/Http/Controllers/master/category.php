@@ -50,7 +50,7 @@ class category extends Controller {
 		} elseif ($this->general->isCrudAllow($this->CRUD, "add") == true) {
 			return Redirect::to('/master/category/create');
 		} else {
-			return view('errors.403');
+			return abort(403);
 		}
 	}
 	public function TrashView(Request $req) {
@@ -65,7 +65,7 @@ class category extends Controller {
 		} elseif ($this->general->isCrudAllow($this->CRUD, "view") == true) {
 			return Redirect::to('/master/category/');
 		} else {
-			return view('errors.403');
+			return abort(403);
 		}
 	}
 	public function create(Request $req) {
@@ -80,7 +80,7 @@ class category extends Controller {
 		} elseif ($this->general->isCrudAllow($this->CRUD, "view") == true) {
 			return Redirect::to('/master/category/');
 		} else {
-			return view('errors.403');
+			return abort(403);
 		}
 	}
 	public function edit(Request $req, $CID) {
@@ -95,12 +95,12 @@ class category extends Controller {
 			if (count($FormData['EditData']) > 0) {
 				return view('master.category.category', $FormData);
 			} else {
-				return view('errors.403');
+				return abort(403);
 			}
 		} elseif ($this->general->isCrudAllow($this->CRUD, "view") == true) {
 			return Redirect::to('/master/category/');
 		} else {
-			return view('errors.403');
+			return abort(403);
 		}
 	}
 	public function save(Request $req) {
@@ -137,7 +137,7 @@ class category extends Controller {
 					$file->move($dir, $fileName1);
 					$CImage = $dir . $fileName1;
 				}
-				$CID = $this->DocNum->getDocNum("CATEGORY");
+				$CID = $this->DocNum->getDocNum("Category");
 				$data = array(
 					"CID" => $CID,
 					"CName" => $req->CName,

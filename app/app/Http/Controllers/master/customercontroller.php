@@ -53,7 +53,7 @@ class customercontroller extends Controller {
 		} elseif ($this->general->isCrudAllow($this->CRUD, "add") == true) {
 			return Redirect::to('/master/customer/customer/');
 		} else {
-			return view('errors.403');
+			return abort(403);
 		}
 	}
 	public function TrashView(Request $req) {
@@ -67,7 +67,7 @@ class customercontroller extends Controller {
 		} elseif ($this->general->isCrudAllow($this->CRUD, "view") == true) {
 			return Redirect::to('/master/customer/');
 		} else {
-			return view('errors.403');
+			return abort(403);
 		}
 	}
 	public function create(Request $req) {
@@ -83,7 +83,7 @@ class customercontroller extends Controller {
 		} elseif ($this->general->isCrudAllow($this->CRUD, "view") == true) {
 			return Redirect::to('/master/customer/');
 		} else {
-			return view('errors.403');
+			return abort(403);
 		}
 	}
 	public function edit(Request $req, $CID) {
@@ -96,14 +96,12 @@ class customercontroller extends Controller {
 			$FormData['isEdit'] = true;
 			$FormData['SETTINGS'] = $this->Settings;
 
-			$sql = "SELECT C.*, CCD.* FROM tbl_customer as C LEFT JOIN tbl_customer_contact_details as CCD On CCD.CID=C.CID Where  C.CID='" . $CID . "'";
+			$sql = "SELECT * FROM tbl_customer as C Where CID='" . $CID . "'";
 
 			$Contactperson = DB::select($sql);
 
 			$FormData['Contactperson'] = $Contactperson;
 			$FormData['EditData'] = DB::table('tbl_customer')
-				->leftJoin('tbl_shippingaddress', 'tbl_customer.CID', '=', 'tbl_shippingaddress.CustID')
-				->select('tbl_customer.*', 'tbl_shippingaddress.*')
 				->where('DFlag', 0)
 				->Where('CID', $CID)
 				->get();
@@ -113,18 +111,19 @@ class customercontroller extends Controller {
 				// dd($FormData);
 				return view('master.customer.customer', $FormData);
 			} else {
-				return view('errors.403');
+				return abort(403);
 			}
 		} elseif ($this->general->isCrudAllow($this->CRUD, "view") == true) {
 			return Redirect::to('/master/customer/edit');
 		} else {
-			return view('errors.403');
+			return abort(403);
 		}
 	}
 	public function Save(Request $req) {
+		// dd($req);
 
 		if ($req->PostalCodeID == $req->PostalCode) {
-			$req->PostalCodeID = $this->general->Check_and_Create_PostalCode($req->PostalCode, $req->Country, $req->State, $this->DocNum);
+			// $req->PostalCodeID = $this->general->Check_and_Create_PostalCode($req->PostalCode, $req->Country, $req->State, $this->DocNum);
 		}
 		$OldData = $NewData = array();
 		$RoleID = "";
@@ -183,8 +182,8 @@ class customercontroller extends Controller {
 					"CImg" => $ProfileImage,
 					"Email" => $req->Email,
 					"Address" => $req->Address,
-					"CityID" => $req->City,
-					"StateID" => $req->CityID,
+					"CityID" => $req->CityID,
+					"StateID" => $req->StateID,
 					"CountryID" => $req->CountryID,
 					"MobileNumber" => $req->MobileNumber,
 					"ActiveStatus" => $req->ActiveStatus,
@@ -204,6 +203,7 @@ class customercontroller extends Controller {
 
 			} catch (Exception $e) {
 				$status = false;
+				dd($e);
 			}
 			if ($status == true) {
 				DB::commit();
@@ -224,13 +224,10 @@ class customercontroller extends Controller {
 	public function Update(Request $req, $UserID) {
 
 		if ($req->PostalCodeID == $req->PostalCode) {
-
-			$req->PostalCodeID = $this->general->Check_and_Create_PostalCode($req->PostalCode, $req->Country, $req->State, $this->DocNum);
+			// $req->PostalCodeID = $this->general->Check_and_Create_PostalCode($req->PostalCode, $req->Country, $req->State, $this->DocNum);
 		}
 
 		if ($this->general->isCrudAllow($this->CRUD, "edit") == true) {
-
-
 
 			$rules = array(
 				"CImg" => 'nullable',
@@ -243,6 +240,7 @@ class customercontroller extends Controller {
 				"MobileNumber" => ['required', 'max:10', new ValidUnique(array("TABLE" => "tbl_user_info", "WHERE" => " MobileNumber='" . $req->MobileNumber . "' "), "This Mobile Number is already taken.")],
 				"ActiveStatus" => 'required',
 			);
+
 			$message = array(
 				// 'CImg.required' => 'Image is required',
 				'CName.required' => 'FirstName is required',
@@ -253,11 +251,13 @@ class customercontroller extends Controller {
 				'Address.min' => 'Address must be at least 3 characters',
 				'Address.max' => 'Address may not be greater than 100 characters',
 			);
+
 			$validator = Validator::make($req->all(), $rules, $message);
 
 			if ($validator->fails()) {
 				return array('status' => false, 'message' => "Customer Update Failed", 'errors' => $validator->errors());
 			}
+
 			$status = false;
 			try {
 				$OldData = (array) DB::table('tbl_customer')->where('CID', $UserID)->get();

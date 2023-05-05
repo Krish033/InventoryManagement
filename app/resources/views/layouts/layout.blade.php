@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <meta name="_token" content="{{ csrf_token() }}" />
     <title>{{ config('app.name') }} - Admin</title>
 
@@ -15,26 +15,25 @@
     Google fonts
     ====================================================================================================== --}}
     <link href="https://fonts.gstatic.com" rel="preconnect" />
-    <link
-        href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet" />
 
     {{-- CSS ==================================================================================================
     Data Tabe
     ====================================================================================================== --}}
     <link rel="stylesheet" href="{{url('/')}}/Assets2/plugins/DataTable/css/responsive.dataTables.min.css">
 
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/Assets2/css/datatable-extension.css">
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.jqueryui.min.css" />
+    {{-- <link rel="stylesheet" type="text/css" href="{{url('/')}}/Assets2/css/datatable-extension.css"> --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.jqueryui.min.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
 
     {{-- CSS ==================================================================================================
     Bootstrap
     ====================================================================================================== --}}
-    <link href="{{url('/')}}/Assets2/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="{{url('/')}}/Assets2/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" integrity="sha512-ZnR2wlLbSbr8/c9AgLg3jQPAattCUImNsae6NHYnS9KrIwRdcY9DxFotXhNAKIKbAXlRnujIqUWoXXwqyFOeIQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     {{-- CSS ==================================================================================================
     Style plugins
     ====================================================================================================== --}}
@@ -43,9 +42,7 @@
     <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/css/loader.css">
     <link rel="stylesheet" href="{{url('/')}}/assets/plugins/dynamic-form/v2/dynamicForm.min.css">
     <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/js/lightbox/css/lightgallery.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
-        integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA=="
-        crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA==" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" />
 
     {{-- CSS ==================================================================================================
@@ -198,6 +195,7 @@
             width: 1.45rem;
             height: 1.45rem;
         }
+
     </style>
 
     <style>
@@ -206,6 +204,7 @@
                 width: 100% !important;
             }
         }
+
     </style>
 
     @yield('styles')
@@ -229,7 +228,6 @@
     {{-- JS ==================================================================================================
     Bootstrap
     ====================================================================================================== --}}
-    <script src="{{url('/')}}/Assets2/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/css/bootstrap.css">
     <script src="{{url('/')}}/assets/js/bootstrap-multiselect/bootstrap-multiselect.js"></script>
 
@@ -265,37 +263,16 @@
     <script src="{{url('/')}}/assets/js/select2/select2-custom.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
-    </script>
     <script src="{{url('/')}}/assets/plugins/bootbox-js/bootbox.min.js"></script>
     <script src="{{url('/')}}/assets/js/custom-prototype.js"></script>
     <script src="{{url('/')}}/Assets2/plugins/sweet-alert/sweetalert.js"></script>
     <script src="{{url('/')}}/Assets2/plugins/sweet-alert/sweetalert.min.js"></script>
     <script src="{{url('/')}}/Assets2/helpers.js"></script>
 
-    {{-- JS ==================================================================================================
-    Custom
-    ====================================================================================================== --}}
-    <script>
-        $(document).ready(function() {
-            // Show success messages
-            @if(session()->has('success'))
-                toastr.success('{{ session()->get("success") }}')
-            @endif    
-            // show error messages
-            @if(session()->has('error'))
-                toastr.error('{{ session()->get("error") }}', 'failed')
-            @endif   
-            // Show info messages
-            @if(session()->has('info'))
-                toastr.info('{{ session()->get("info") }}')
-            @endif    
-        })
-    </script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.css" />
 </head>
 
-<body oncontextmenu="return true;">
+<body>
     {{-- <textarea style="display: none;" id="txtThemeOption">{{json_encode($Theme)}}</textarea> --}}
     <input type="hidden" name="txtActiveName" id="txtActiveName" value="{{$ActiveMenuName}}">
     <input type="hidden" name="txtRootUrl" id="txtRootUrl" value="{{url('/')}}/">
@@ -319,8 +296,9 @@
                 {{-- {{ dd($user) }} --}}
                 <li class="nav-item dropdown pe-3">
                     <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                        <img src="{{url('/')}}/{{$UInfo->ProfileImage}}" alt="Profile" class="rounded-circle"
-                            style="width: 30px; height: 30px; object-fit: cover" />
+                        <img src="{{is_null($UInfo->ProfileImage) ? url('/') . '/' . $UInfo->ProfileImage : 'https://freesvg.org/img/abstract-user-flat-1.png'}}" alt="" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover" />
+
+
                         <span class="d-none d-md-block dropdown-toggle ps-2">{{ auth()->user()->name }}</span> </a>
                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
                         <li class="dropdown-header">
@@ -331,8 +309,7 @@
                             <hr class="dropdown-divider" />
                         </li>
                         <li>
-                            <a class="dropdown-item d-flex align-items-center"
-                                href="{{ url('/') }}/users-and-permissions/profile">
+                            <a class="dropdown-item d-flex align-items-center" href="{{ url('/') }}/users-and-permissions/profile">
                                 <i class="bi bi-person"></i>
                                 <span>My Profile</span>
                             </a>
@@ -340,21 +317,9 @@
                         <li>
                             <hr class="dropdown-divider" />
                         </li>
-                        {{-- <li>
-                            <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                                <i class="bi bi-gear"></i>
-                                <span>Account Settings</span>
-                            </a>
-                        </li> --}}
                         <li>
                             <hr class="dropdown-divider" />
                         </li>
-                        {{-- <li>
-                            <a class="dropdown-item d-flex align-items-center" href="pages-faq.html">
-                                <i class="bi bi-question-circle"></i>
-                                <span>Need Help?</span>
-                            </a>
-                        </li> --}}
                         <li>
                             <hr class="dropdown-divider" />
                         </li>
@@ -386,13 +351,7 @@
         </section>
     </main>
 
-    {{-- Other Scripts --}}
-    <script src="{{url('/')}}/Assets2/vendor/apexcharts/apexcharts.min.js"></script>
-    <script src="{{url('/')}}/Assets2/vendor/chart.js/chart.umd.js"></script>
-    <script src="{{url('/')}}/Assets2/vendor/echarts/echarts.min.js"></script>
-    <script src="{{url('/')}}/Assets2/vendor/quill/quill.min.js"></script>
-    <script src="{{url('/')}}/Assets2/vendor/tinymce/tinymce.min.js"></script>
-    <script src="{{url('/')}}/Assets2/vendor/php-email-form/validate.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js" integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="{{url('/')}}/assets/js/bootstrap/popper.min.js"></script>
     <script src="{{url('/')}}/assets/js/bootstrap/bootstrap.js"></script>
@@ -401,9 +360,10 @@
     <script src="{{url('/')}}/assets/js/support.js"></script>
     <script src="{{url('/')}}/Assets2/js/main.js"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('.dropify').dropify();
         });
+
     </script>
     {{-- Scripts --}}
     @yield('scripts')

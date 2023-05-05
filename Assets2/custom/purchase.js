@@ -14,7 +14,12 @@ const currency = new Intl.NumberFormat("en-IN", {
 
 const createSelectOption = (parent, data, key, value, selected) => {
   // createing item
-  data.map((item) => {
+  if (!(data instanceof Array)) {
+    console.log("string");
+    return toastr.error('Something went wrong!', 'Error');
+  }
+
+  data?.map((item) => {
     const option = document.createElement("option");
     option.textContent = item[value];
     option.value = item[key];
@@ -159,7 +164,6 @@ const getCategoryItems = async () => {
 const genepriceGrandTotal = () => {
   const subtotal = requestTotalTax() + requestTotalInfo();
   document.querySelector("#grandTotal").textContent = currency.format(subtotal);
-  console.log(subtotal);
   return subtotal;
 };
 

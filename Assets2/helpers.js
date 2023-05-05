@@ -1,12 +1,12 @@
 class Request {
-  routeUrl = "https://localhost/Sales/First";
+  routeUrl = "http://localhost/Krishna/InventoryManagement";
 
   async http(ajaxConfiguration) {
     ajaxConfiguration.url = this.routeUrl + ajaxConfiguration.url;
     // main dfata return template
     const defaultReturnData = {
       data: [],
-      error: [],
+      error: null,
       isLoading: false,
       isError: false,
       isSuccess: false,
@@ -31,8 +31,13 @@ class Request {
       return defaultReturnData;
     } catch (error) {
       defaultReturnData.isError = true;
-      defaultReturnData.error = error;
+      defaultReturnData.date = null;
+      defaultReturnData.error = {
+        mesage: error?.responseJSON.message,
+        status: error?.status
+      };
 
+      console.log(defaultReturnData);
       return defaultReturnData;
     }
   }

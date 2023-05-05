@@ -126,7 +126,7 @@ class gst extends Controller {
 			$status = false;
 			try {
 
-				$TaxID = $this->DocNum->getDocNum("Tax-ID");
+				$TaxID = $this->DocNum->getDocNum("TAX");
 				$data = array(
 					"TaxID" => $TaxID,
 					"TaxName" => $req->GstName,
@@ -141,7 +141,7 @@ class gst extends Controller {
 			}
 
 			if ($status == true) {
-				$this->DocNum->updateDocNum("Tax-ID");
+				$this->DocNum->updateDocNum("TAX");
 				$NewData = (array) DB::table('tbl_tax')->where('TaxID', $TaxID)->get();
 				$logData = array("Description" => "New GST Created ", "ModuleName" => "tbl_tax", "Action" => "Add", "ReferID" => $CID, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
 				$this->logs->Store($logData);

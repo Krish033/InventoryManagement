@@ -54,7 +54,7 @@ class PurchaseController extends Purchase {
     /**
      * Use this document number
      */
-    protected const docName = "Purchases";
+    protected const docName = "Purchase";
 
     /**
      * Set views folder
@@ -216,7 +216,7 @@ class PurchaseController extends Purchase {
             // creating purchasedItems
             collect($request->products)->map(function ($item) use ($documentNumber) {
                 // ! the collection does not return anything
-                $itemNumber = $this->docNum->getDocNum('PurchasedItems');
+                $itemNumber = $this->docNum->getDocNum('PurchaseItem');
                 // udating data
                 $purchaseData = [
                     ...$item, // single product

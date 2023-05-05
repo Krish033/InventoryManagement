@@ -264,7 +264,7 @@ class ProductController extends Controller {
             $status = false;
             $ProfileImage = "";
             try {
-                $RoleID = $this->DocNum->getDocNum("Product");
+                $RoleID = $this->DocNum->getDocNum("Products");
                 $UserRights = json_decode($req->CRUD, true);
 
                 if ($req->hasFile('img')) {
@@ -311,7 +311,7 @@ class ProductController extends Controller {
             if ($status == true) {
                 DB::commit();
 
-                $this->DocNum->updateDocNum("Product");
+                $this->DocNum->updateDocNum("Products");
                 $NewData = DB::Table(self::table)->where(self::primaryKey, $RoleID)->get();
                 $logData = array("Description" => "New Product Created ", "ModuleName" => "Product", "Action" => "Add", "ReferID" => $RoleID, "OldData" => "", "NewData" => serialize($NewData), "UserID" => $this->UserID, "IP" => $req->ip());
                 $this->logs->Store($logData);

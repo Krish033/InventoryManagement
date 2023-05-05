@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\Redirect;
 use App\Models\DocNum;
 use App\Models\general;
 use App\Models\ServerSideProcess;
-use DB;
-use Auth;
 use App\Rules\ValidUnique;
 use App\Http\Controllers\logController;
+use Exception;
+use Illuminate\Support\Facades\DB;
 
 class subcategory extends Controller {
 	private $general;
@@ -139,7 +139,7 @@ class subcategory extends Controller {
 					$file->move($dir, $fileName1);
 					$SCImage = $dir . $fileName1;
 				}
-				$SCID = $this->DocNum->getDocNum("SubCategory");
+				$SCID = $this->DocNum->getDocNum("SUB-CATEGORY");
 				$data = array(
 					"SCID" => $SCID,
 					"SCName" => $req->SCName,
@@ -155,7 +155,7 @@ class subcategory extends Controller {
 			}
 
 			if ($status == true) {
-				$this->DocNum->updateDocNum("SubCategory");
+				$this->DocNum->updateDocNum("SUB-CATEGORY");
 				$NewData = (array) DB::table('tbl_subcategory')->where('SCID', $SCID)->get();
 				$logData = array("Description" => "New Sub Category Created ", "ModuleName" => "SubCategory", "Action" => "Add", "ReferID" => $SCID, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
 				$this->logs->Store($logData);

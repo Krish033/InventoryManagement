@@ -34,7 +34,7 @@ class SupplierController extends Controller {
     // table name
     protected const table = "tbl_suppliers";
     protected const primaryId = "sid";
-    protected const docName = "Supplier";
+    protected const docName = "Suppliers";
 
 
 
@@ -140,8 +140,8 @@ class SupplierController extends Controller {
                             <i class="fa fa-pencil"></i>
                         </a>';
                     }
-                    if (boolval($this->can('delete'))) {
-                        $html .= '
+
+                    $html .= '
                         <button 
                             type="button" 
                             data-id="' . $d . '" 
@@ -150,7 +150,7 @@ class SupplierController extends Controller {
                         >
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </button>';
-                    }
+
                     return $html;
                 }
             ]
@@ -287,6 +287,7 @@ class SupplierController extends Controller {
         $validator = Validator::make($req->all(), $rules, $message);
         // error message
         if ($validator->fails()) {
+            dd('Error');
             session()->flash('error', 'Cannot create supplier with invalid data');
             return response()->json(['status' => false, 'message' => "Suppplier Creation Failed", 'errors' => $validator->errors()]);
         }
@@ -317,7 +318,6 @@ class SupplierController extends Controller {
 
             $data = array(
                 "sid" => $RoleID,
-                "img" => $ProfileImage,
                 "name" => $req->name,
                 "email" => $req->email,
                 "address" => $req->address,
@@ -328,6 +328,7 @@ class SupplierController extends Controller {
                 "is_active" => $req->is_active,
                 "dflag" => 0,
                 "created_by" => $this->UserID,
+                "created_at" => now(),
             );
 
             // LogForStoredEvent::dispatch($data, self::table);
@@ -440,8 +441,6 @@ class SupplierController extends Controller {
                     $ProfileImage = $dir . $fileName1;
                 }
 
-                // LogForUpdatedEvents::dispatch($data);
-
                 $data = array(
                     "sid" => $UserID,
                     "name" => $req->name,
@@ -486,55 +485,55 @@ class SupplierController extends Controller {
     public function delete(Request $req, $sid) {
 
         $OldData = $NewData = array();
-        if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
-            DB::beginTransaction();
-            $status = false;
-            try {
-                $OldData = DB::table(self::table)->where('sid', $sid)->get();
-                $status = DB::table(self::table)->where('sid', $sid)->update(array("dflag" => 1, "deleted_by" => $this->UserID, "deleted_at" => date("Y-m-d H:i:s")));
-            } catch (Exception $e) {
-                dd($e);
-            }
-            if ($status == true) {
-                DB::commit();
-                $logData = array("Description" => "customer has been Deleted ", "ModuleName" => "customer", "Action" => "Delete", "ReferID" => $sid, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
-                $this->logs->Store($logData);
-                return array('status' => true, 'message' => "Supplier deleted Successfully");
-            } else {
-                DB::rollback();
-                return array('status' => false, 'message' => "Supplier deletion Failed");
-            }
-        } else {
-            return response(array('status' => false, 'message' => "Access Denied"), 403);
+        // if ($this->general->isCrudAllow($this->CRUD, "delete")) {
+        DB::beginTransaction();
+        $status = false;
+        try {
+            $OldData = DB::table(self::table)->where('sid', $sid)->get();
+            $status = DB::table(self::table)->where('sid', $sid)->update(array("dflag" => 1, "deleted_by" => $this->UserID, "deleted_at" => date("Y-m-d H:i:s")));
+        } catch (Exception $e) {
+            dd($e);
         }
+        if ($status == true) {
+            DB::commit();
+            $logData = array("Description" => "customer has been Deleted ", "ModuleName" => "customer", "Action" => "Delete", "ReferID" => $sid, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
+            $this->logs->Store($logData);
+            return array('status' => true, 'message' => "Supplier deleted Successfully");
+        } else {
+            DB::rollback();
+            return array('status' => false, 'message' => "Supplier deletion Failed");
+        }
+        // } else {
+        //     return response(array('status' => false, 'message' => "Access Denied"), 403);
+        // }
     }
 
 
     public function restore(Request $req, $sid) {
         $OldData = $NewData = array();
-        if ($this->general->isCrudAllow($this->CRUD, "restore") == true) {
-            DB::beginTransaction();
-            $status = false;
-            try {
-                $OldData = DB::table(self::table)->where(self::primaryId, $sid)->get();
-                $status = DB::table(self::table)->where(self::primaryId, $sid)->update(array("dflag" => 0, "updated_by" => $this->UserID, "updated_at" => date("Y-m-d H:i:s")));
-            } catch (Exception $e) {
+        // if ($this->general->isCrudAllow($this->CRUD, "restore") == true) {
+        DB::beginTransaction();
+        $status = false;
+        try {
+            $OldData = DB::table(self::table)->where(self::primaryId, $sid)->get();
+            $status = DB::table(self::table)->where(self::primaryId, $sid)->update(array("dflag" => 0, "updated_by" => $this->UserID, "updated_at" => date("Y-m-d H:i:s")));
+        } catch (Exception $e) {
 
-                dd($e);
-            }
-            if ($status == true) {
-                DB::commit();
-                $NewData = DB::table(self::table)->where(self::primaryId, $sid)->get();
-                $logData = array("Description" => "Supplier has been Restored ", "ModuleName" => "Supplier", "Action" => "Restore", "ReferID" => $sid, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
-                $this->logs->Store($logData);
-                return array('status' => true, 'message' => "Supplier Restored Successfully");
-            } else {
-                DB::rollback();
-                return array('status' => false, 'message' => "Supplier Restore Failed");
-            }
-        } else {
-            return response(array('status' => false, 'message' => "Access Denied"), 403);
+            dd($e);
         }
+        if ($status == true) {
+            DB::commit();
+            $NewData = DB::table(self::table)->where(self::primaryId, $sid)->get();
+            $logData = array("Description" => "Supplier has been Restored ", "ModuleName" => "Supplier", "Action" => "Restore", "ReferID" => $sid, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
+            $this->logs->Store($logData);
+            return array('status' => true, 'message' => "Supplier Restored Successfully");
+        } else {
+            DB::rollback();
+            return array('status' => false, 'message' => "Supplier Restore Failed");
+        }
+        // } else {
+        //     return response(array('status' => false, 'message' => "Access Denied"), 403);
+        // }
     }
 
 
