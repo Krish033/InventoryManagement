@@ -69,7 +69,7 @@ Route::controller(SaleController::class)->group(function () {
     Route::get('/transactions/api/sales/tax/{taxId}', 'tax')->name('sales.single.tax'); // Single Tax record
     Route::get('/transactions/api/sales/customers', 'customers')->name('sales.customers'); // category record
     // getting a single record
-    Route::get('/transactions/api/sales/created-products/{tranNo}', 'products'); // get records for a single item
+    Route::get('/transactions/api/sales/created-products/{tranNo}', 'createdProducts'); // get records for a single item
     // Addons
     Route::get('/transactions/api/sales/categories', 'categories')->name('sales.category'); // category record
     Route::get('/transactions/api/sales/subCategories/{scId}', 'subCategories')->name('sales.subcategory'); // Sub category record

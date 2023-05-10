@@ -73,12 +73,12 @@ Route::controller(gst::class)->group(function () {
     Route::get('/master/tax', 'view');
     Route::get('/master/gst', 'view');
     Route::post('master/gst/data', 'TableView');
-    Route::get('master/gst/create', 'create');
-    Route::get('/master/gst/edit/{CID}', 'edit');
+    Route::get('master/tax/create', 'create');
+    Route::get('/master/tax/edit/{CID}', 'edit');
     Route::post('master/gst/create', 'save');
     Route::post('master/gst/edit/{CID}', 'update');
     Route::post('master/gst/delete/{CID}', 'delete');
-    Route::get('master/gst/trash-view/', 'TrashView');
+    Route::get('master/tax/trash-view/', 'TrashView');
     Route::post('master/gst/trash-data', 'TrashTableView');
     Route::post('master/gst/restore/{CID}', 'Restore');
 });

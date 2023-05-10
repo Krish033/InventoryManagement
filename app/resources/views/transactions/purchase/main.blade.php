@@ -74,22 +74,7 @@
 	</style>
 	@endsection @section('content')
 	<div class="container-fluid">
-		<div class="page-header">
-			<div class="row">
-				<div class="col-sm-12">
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item">
-							<a data-original-title="" href="{{ url('/') }}/dashboard" title=""><i class="f-16 fa fa-home"></i></a>
-						</li>
-						<li class="breadcrumb-item">Transactions</li>
-						<li class="breadcrumb-item">Purchase</li>
-					</ol>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="container-fluid">
-		<h1 class="h5 mb-4">Create Payment</h1>
+		<h1 class="h5 mb-4">{{ $header }}</h1>
 		<div>
 			<form class="form">
 				<div class="d-md-flex gap-3">
@@ -155,13 +140,13 @@
 						</div>
 						<div class="form-group col-3 col-md-1 d-flex w-100">
 							<label class="form-label text-dark" for="">Quantity</label>
-							<input class="form-control form-control-sm disabled" data-toggle="tooltip" id="quantity"
-								placeholder="Quantity" title="Quantity" type="number" />
+							<input class="form-control form-control-sm disabled" data-toggle="tooltip" id="quantity" placeholder="Quantity"
+								title="Quantity" type="number" />
 						</div>
 						<div class="form-group col-3 col-md-1 d-flex w-100">
 							<label class="form-label text-dark" for="">Rate</label>
-							<input class="form-control form-control-sm" data-toggle="tooltip" id="price" placeholder="Rate(Rs)"
-								readonly title="Rate" type="text" />
+							<input class="form-control form-control-sm" data-toggle="tooltip" id="price" placeholder="Rate(Rs)" readonly
+								title="Rate" type="text" />
 						</div>
 						<div class="form-group col-4 col-md-2 d-flex w-100">
 							<label class="form-label text-dark" for="">Tax type</label>
@@ -260,6 +245,7 @@
 				data,
 				isError
 			} = await requestCategories();
+
 			const categoryId = document.querySelector('#categoryId');
 			// caheck error and create error
 			if (isError) return toastr.error("Something went wrong!", 'Failed');
@@ -450,6 +436,8 @@
 				data: suppliers,
 				isError
 			} = await requestSuppliers();
+
+
 			const supplierSelect = document.querySelector('#supplierId');
 			createSelectOption(supplierSelect, suppliers, 'sid', 'name',
 				@if ($isEdit)

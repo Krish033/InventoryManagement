@@ -1,20 +1,6 @@
 @extends('layouts.layout')
 @section('content')
 	<div class="container-fluid">
-		<div class="page-header">
-			<div class="row">
-				<div class="col-sm-12">
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a data-original-title="" href="{{ url('/') }}" title=""><i
-									class="f-16 fa fa-home"></i></a></li>
-						<li class="breadcrumb-item">Transactions</li>
-						<li class="breadcrumb-item">Sales</li>
-					</ol>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="container-fluid">
 		<div class="row">
 			<div class="col-sm-12">
 				<div class="row">
@@ -24,7 +10,7 @@
 								<div class="form-row align-items-center">
 									<div class="col-md-4"> </div>
 									<div class="col-md-4 my-2">
-										<h5>Sale</h5>
+										<h5>{{ $header }}</h5>
 									</div>
 									<div class="col-md-4 my-2 text-right text-md-right">
 										{{-- @if ($crud['restore'] == 1) --}}

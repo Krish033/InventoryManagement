@@ -312,12 +312,12 @@ class category extends Controller {
 					'dt' => '3',
 					'formatter' => function ($d, $row) {
 						$html = '';
-						if ($this->general->isCrudAllow($this->CRUD, "edit") == true) {
-							$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-success btn-sm -success mr-10 btnEdit" data-original-title="Edit"><i class="fa fa-pencil"></i></button>';
-						}
-						if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
-							$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-danger btn-sm -success btnDelete" data-original-title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
-						}
+						// if ($this->general->isCrudAllow($this->CRUD, "edit") == true) {
+						$html .= '<button type="button" data-id="' . $d . '" class="btn btn-outline-success btn-sm -success me-2 btnEdit" data-original-title="Edit"><i class="fa fa-pencil"></i></button>';
+						// }
+						// if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
+						$html .= '<button type="button" data-id="' . $d . '" class="btn btn-outline-danger btn-sm -success btnDelete" data-original-title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+						// }
 						return $html;
 					}
 				)

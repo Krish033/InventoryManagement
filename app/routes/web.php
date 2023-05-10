@@ -16,7 +16,7 @@ Route::controller(loginController::class)->group(function () {
 })->middleware(['guest']);
 
 Route::controller(dashboardController::class)->group(function () {
-    // Route::get('/', 'dashboard');
+    Route::get('/', 'dashboard');
     Route::get('/dashboard', 'dashboard');
 })->middleware(['auth']);
 

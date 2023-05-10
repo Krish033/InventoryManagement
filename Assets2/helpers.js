@@ -1,5 +1,9 @@
 class Request {
-  routeUrl = "http://localhost/Krishna/InventoryManagement";
+
+  routeUrl = "";
+  constructor(url) {
+    this.routeUrl = url
+  }
 
   async http(ajaxConfiguration) {
     ajaxConfiguration.url = this.routeUrl + ajaxConfiguration.url;
@@ -29,9 +33,11 @@ class Request {
       }
 
       return defaultReturnData;
+
     } catch (error) {
       defaultReturnData.isError = true;
       defaultReturnData.date = null;
+      
       defaultReturnData.error = {
         mesage: error?.responseJSON.message,
         status: error?.status
@@ -43,6 +49,6 @@ class Request {
   }
 }
 
-const createHttpRequest = (baseUrl) => {
-  return new Request();
+const createHttpRequest = (baseUrl = "https://localhost/Krishna/InventoryManagement") => {
+  return new Request(baseUrl);
 };

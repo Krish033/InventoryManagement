@@ -22,7 +22,7 @@ class MainSaleRequest extends FormRequest {
             'tranDate' => 'required',
             'customerId' => 'required',
             'mop' => 'nullable',
-            'paymentStatus' => 'required',
+            'paymentStatus' => 'nullable',
             'taxable' => 'required',
             'taxAmount' => 'required',
             'TotalAmount' => 'required',

@@ -34,16 +34,6 @@ const createSelectOption = (parent, data, key, value, selected) => {
   return true;
 };
 
-const defaultOption = () => {
-  const defaultOption = document.createElement("option");
-
-  defaultOption.textContent = "Select";
-  defaultOption.value = "";
-  defaultOption.disabled = "";
-  
-  return defaultOption;
-}
-
 const totalAmount = (taxable, calculatedTaxAmount) => {
   const subtotal = document.querySelector("#subtotal");
   subtotal.classList.remove("disabled");
@@ -56,7 +46,7 @@ const requestCategories = () => {
   const ajaxConfiguration = {
     method: "GET",
     type: "GET",
-    url: "/transactions/api/purchase/requestCategory",
+    url: "/transactions/api/sales/categories",
   }; // main data
   const data = request.http(ajaxConfiguration);
   return data;
@@ -66,7 +56,7 @@ const requestSubCategories = (cid) => {
   // getting the tax
   const ajaxConfiguration = {
     method: "GET",
-    url: "/transactions/api/purchase/request-subCategory/" + cid,
+    url: "/transactions/api/sales/subCategories/" + cid,
   }; // main data
 
   const data = request.http(ajaxConfiguration);
@@ -78,7 +68,7 @@ const requestProducts = (scId) => {
   const ajaxConfiguration = {
     method: "GET",
     type: "GET",
-    url: "/transactions/api/purchase/request-products/" + scId,
+    url: "/transactions/api/sales/products/" + scId,
   }; // main data
 
   const data = request.http(ajaxConfiguration);
@@ -90,7 +80,7 @@ const requestSingleProducts = (pid) => {
   const ajaxConfiguration = {
     method: "GET",
     type: "GET",
-    url: "/transactions/api/purchase/request-single-products/" + pid,
+    url: "/transactions/api/sales/product/" + pid,
   }; // main data
 
   const data = request.http(ajaxConfiguration);
@@ -103,7 +93,7 @@ const requestTaxes = () => {
   const ajaxConfiguration = {
     method: "GET",
     type: "GET",
-    url: "/transactions/api/purchase/requestTax",
+    url: "/transactions/api/sales/taxes",
   }; // main data
 
   const data = request.http(ajaxConfiguration);
@@ -111,12 +101,12 @@ const requestTaxes = () => {
 };
 
 // get category products
-const requestSuppliers = () => {
+const requestCustomers = () => {
   // getting the tax
   const ajaxConfiguration = {
     method: "GET",
     type: "GET",
-    url: "/transactions/api/purchase/request-suppliers",
+    url: "/transactions/api/sales/customers",
   }; // main data
 
   const data = request.http(ajaxConfiguration);
@@ -160,6 +150,7 @@ const clearInputs = (subNodeList = getClearables()) => {
     // clearing the value
     item.value = "";
     clearSelectInputs();
+    $('#hsn_sac').html('000000');
 
     disableInputs();
     return true;
@@ -334,6 +325,7 @@ const createDOMElement = async (obj) => {
   tr.setAttribute("data-quantity", obj.quantity);
   tr.setAttribute("data-price", obj.price);
   tr.setAttribute("data-taxType", obj.taxType);
+  // tr.setAttribute("data-hsn_sac_code", obj.hsn);
 
   tr.setAttribute("data-taxType", obj.taxType);
   tr.setAttribute("data-taxPercentage", obj.taxPercentage);
@@ -364,6 +356,11 @@ const createDOMElement = async (obj) => {
   description.setAttribute("id", "item-description");
   tr.appendChild(description);
   // category
+  const hsn = document.createElement("td");
+  hsn.textContent = singleProduct.hsn_sac_code;
+  hsn.setAttribute("id", "item-hsn");
+  tr.appendChild(hsn);
+
   const qty = document.createElement("td");
   qty.textContent = obj.quantity;
   qty.setAttribute("id", "item-quantity");
@@ -473,6 +470,18 @@ const calculateTaxAmount = (amount, taxPercentage) => {
   return (parseFloat(amount) * parseFloat(taxPercentage)) / 100;
 };
 
+
+const defaultOption = () => {
+  const defaultOption = document.createElement("option");
+
+  defaultOption.textContent = "Select";
+  defaultOption.value = "";
+  defaultOption.disabled = "";
+  
+  return defaultOption;
+}
+
+
 const updateEverything = () => {
   // updatable values
   const quantity = document.querySelector("#quantity"),
@@ -498,7 +507,7 @@ const updateEverything = () => {
     isNaN(taxPercent) ? 0.0 : taxPercent
   );
   // dont calculate tax if excluded
-  if (taxtype.value == "include") {
+  if (taxtype.value == "includes") {
     if (!isNaN(taxPercent)) {
       //formula
       // ! GSTCalculatedTotalAmount * (100 / (100 + taxPercent))
@@ -514,7 +523,7 @@ const updateEverything = () => {
     }
   }
 
-  if (taxtype.value == "exclude") {
+  if (taxtype.value == "excludes") {
     if (!isNaN(taxPercent)) {
       // formula
       // ! taxableValue + taxableValue * (taxPercent / 100) - taxableValue

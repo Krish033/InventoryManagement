@@ -9,13 +9,16 @@
 /*--------------------------------------------------------------
 # General
 --------------------------------------------------------------*/
+
 :root {
   scroll-behavior: smooth;
 }
 
+
+
 body {
   font-family: "Open Sans", sans-serif;
-  background: #f6f9ff;
+  background: #f4f5e833 !important;
   color: #444444;
 }
 
@@ -148,7 +151,7 @@ h6 {
 }
 
 .dropdown-menu .dropdown-item:hover {
-  background-color: #f6f9ff;
+  background-color: #f8f7e661;
 }
 
 @media (min-width: 768px) {
@@ -1254,3 +1257,74 @@ h6 {
   font-size: 1.2em !important;
   color: #000000 !important;
 }
+
+table{
+  width: 100% !important;
+}
+
+.dt-buttons .btn-group .btn{
+  background-color: #6743ea;
+
+  border: none !important;
+  box-shadow: none; 
+  outline: none;
+}
+
+.dt-buttons {
+  background-color: transparent !important;
+  border: none;
+  gap: .3em;
+  outline: none;
+}
+
+.dt-buttons .btn{
+  border: none;
+  border-radius: 5px;
+  background-color: #6743ea;
+}
+
+/* .dataTables_filter label input{} */
+.paginate_button a{
+  background-color: #6743ea;
+  border: none !important;
+  box-shadow: none; 
+  outline: none;
+} 
+
+.previous a, .next a {
+  background-color: transparent !important;
+}
+
+table img{
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+
+
+.main-bread{
+  background-color: rgba(255, 0, 0, 0);
+}
+
+
+.main-bread-back {
+  margin-right: 1em;
+  font-size: 1.5em;
+  color: #4154f1;
+  margin-top: -4px;
+}
+
+.main-bread-back i, .main-bread-home i {
+  fill: #4154f1 !important;
+}
+
+
+.sidebar-nav .nav-item {
+  cursor: pointer;
+}
+
+.sidebar-nav .nav-item span, .sidebar-nav .nav-item a span {
+  cursor: pointer !important;
+}
+

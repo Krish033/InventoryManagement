@@ -119,9 +119,10 @@ class general extends Model {
 		for ($i = 0; $i < count($Menus); $i++) {
 			if ($Menus[$i]['hasSubMenu'] == 1) {
 				$SubMenus = $this->loadHtmlMenu($Menus[$i]['SubMenu']);
+
 				if ($SubMenus != "") {
 					$html .= "
-					<li class=\"nav-item w-100\">
+					<li class=\"nav-item w-100 " . $Menus[$i]['Level'] . "\">
 						<a data-bs-toggle=\"collapse\" data-bs-target=\"#" . $Menus[$i]['Slug'] . "\" class=\"nav-link " . $Menus[$i]['Slug'] . "\">
 							<i class=\"me-2\">" . $Menus[$i]['Icon'] . "</i>
 							<span class=\"w-100\">" . $Menus[$i]['MenuName'] . "</span>
@@ -143,7 +144,7 @@ class general extends Model {
 						if ($Menus[$i]['MID'] == "M2021-0000008") {
 							$activeElement = $Menus[$i]['ActiveName'] === $this->ActiveMenuName ? "active" : "";
 							$html .= "
-							<li class=\"nav-item\">
+							<li class=\"nav-item " . $Menus[$i]['Level'] . "\">
 								<a href='" . url('/') . '/' . $Menus[$i]['PageUrl'] . "' class=\"nav-link " . $activeElement . " \">
 									" . $menuIcon . "
 									<span>" . $Menus[$i]['MenuName'] . "</span>
@@ -152,7 +153,7 @@ class general extends Model {
 						} else {
 							$activeElement = $Menus[$i]['ActiveName'] === $this->ActiveMenuName ? "active" : "";
 							$html .= "
-							<li class=\"nav-item\">
+							<li class=\"nav-item " . $Menus[$i]['Level'] . "\">
 								<a href='" . URL::to('/') . '/' . $Menus[$i]['PageUrl'] . "' class=\"nav-link " . $activeElement . " \">
 									" . $menuIcon . "
 									<span>" . $Menus[$i]['MenuName'] . "</span>

@@ -213,7 +213,7 @@ class PurchaseController extends Purchase {
         ];
         // start the transactions
         DB::transaction(function () use ($request, $documentNumber, $data) {
-            // creating purchasedItems
+            // creating PurchaseItem
             collect($request->products)->map(function ($item) use ($documentNumber) {
                 // ! the collection does not return anything
                 $itemNumber = $this->docNum->getDocNum('PurchaseItem');
@@ -224,7 +224,7 @@ class PurchaseController extends Purchase {
                     'tranNo' => $documentNumber,
                     'created_at' => now(),
                 ]; // updating docnum
-                $this->docNum->updateDocNum('PurchasedItems'); // updating documnet number
+                $this->docNum->updateDocNum('PurchaseItem'); // updating documnet number
                 LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details', );
             }); // making it a collection to use the map function
 
@@ -279,9 +279,9 @@ class PurchaseController extends Purchase {
                 ->where('tranNo', $tranNo)
                 ->delete();
 
-            // creating purchasedItems
+            // creating PurchaseItem
             collect($request->products)->map(function ($item) use ($tranNo, $request) {
-                $itemNumber = $this->docNum->getDocNum('PurchasedItems');
+                $itemNumber = $this->docNum->getDocNum('PurchaseItem');
                 // udating data
                 $purchaseData = [
                     ...$item, // single product
@@ -290,7 +290,7 @@ class PurchaseController extends Purchase {
                     'created_at' => now(),
                 ]; // updating docnum
 
-                $this->docNum->updateDocNum('PurchasedItems'); // updating documnet number
+                $this->docNum->updateDocNum('PurchaseItem'); // updating documnet number
                 LogForStoredEvent::dispatch($purchaseData, 'tbl_purchase_details', $request->ip());
             }); // making it a collection to use the map function
 

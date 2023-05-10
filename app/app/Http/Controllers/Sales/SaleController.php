@@ -177,11 +177,11 @@ class SaleController extends Controller {
     }
 
     /**
-     * Get All tax
-     * @return void
+     *  GET all tax records
+     * @return \Illuminate\Support\Collection
      */
     public function taxes() {
-        $this->taxBuilder()
+        return $this->taxBuilder()
             ->get(['TaxName', 'TaxPercentage', 'TaxID']);
     }
 
@@ -204,28 +204,67 @@ class SaleController extends Controller {
     protected function productsBuilder(string $productId) {
         return DB::table('tbl_products')
             ->where('dflag', 0)
-            ->where('is_active', 1)
-            ->where('pid', $productId);
+            ->where('is_active', 1);
     }
 
     /**
-     * Get All tax
-     * @return void
+     * GET All tax
+     * @param mixed $scid
+     * @return \Illuminate\Support\Collection
      */
     public function products(string $scid) {
-        $this->productsBuilder($scid)
+        return $this->productsBuilder($scid)
+            ->where('subCategoryId', $scid)
             ->get();
     }
 
     /**
-     * Get a single Product item
+     * Fetch a single Product
      * @param mixed $pid
-     * @return void
+     * @return \Illuminate\Database\Concerns\BuildsQueries|\Illuminate\Database\Eloquent\Model|object|null
      */
     public function product(string $pid) {
-        $this->productsBuilder($pid)
+        return $this->productsBuilder($pid)
+            ->where('pid', $pid)
             ->first();
     }
+
+    /**
+     * Categories
+     * @return \Illuminate\Support\Collection
+     */
+    public function categories() {
+        return DB::table('tbl_category')
+            ->where('DFlag', 0)
+            ->where('ActiveStatus', 1)
+            ->get();
+    }
+
+    /**
+     * SUb Categories
+     * @return \Illuminate\Support\Collection
+     */
+    public function subCategories() {
+        return DB::table('tbl_subcategory')
+            ->where('DFlag', 0)
+            ->where('ActiveStatus', 1)
+            ->get();
+    }
+
+    public function customers() {
+        return DB::table('tbl_customer')
+            ->where('DFlag', 0)
+            ->where('ActiveStatus', 1)
+            ->get();
+    }
+
+
+    public function createdProducts(string $tranNo) {
+        return DB::table('tbl_sales_details')
+            ->where('tranNo', $tranNo)
+            ->get();
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -242,6 +281,7 @@ class SaleController extends Controller {
             'ActiveMenuName' => $this->activeMenu,
             'PageTitle' => $this->pageTitle,
             'isEdit' => false,
+            'invoiceNumber' => (new DocNum)->getDocNum(self::docName)
         ]);
     }
 
@@ -267,7 +307,7 @@ class SaleController extends Controller {
         // start the transactions
         DB::transaction(function () use ($request, $documentNumber, $data) {
             // creating purchasedItems
-            collect($request->products)->map(function ($item) use ($documentNumber) {
+            collect($request->products)->map(function ($item) use ($documentNumber, $request) {
                 // ! the collection does not return anything
                 $itemNumber = $this->docNum->getDocNum('SalesItem');
                 // udating data
@@ -275,10 +315,10 @@ class SaleController extends Controller {
                     ...$item, // single product
                     'detailId' => $itemNumber,
                     'tranNo' => $documentNumber,
-                    'created_at' => now(),
+                    'createdAt' => now(),
                 ]; // updating docnum
                 $this->docNum->updateDocNum('SalesItem'); // updating document number
-                LogForStoredEvent::dispatch($purchaseData, 'tbl_sales_details', );
+                LogForStoredEvent::dispatch($purchaseData, 'tbl_sales_details', $request->ip());
             }); // making it a collection to use the map function
 
             // create logs, create Data
@@ -298,6 +338,11 @@ class SaleController extends Controller {
             abort(401, "Un Authorized");
         }
 
+        $mainData = DB::table(self::table)
+            ->where(self::primaryId, $saId)
+            ->get()
+            ->first();
+
         return view(self::views . ".create", [
             'UInfo' => $this->general->UserInfo['UInfo'],
             'menus' => $this->menus,
@@ -305,10 +350,8 @@ class SaleController extends Controller {
             'ActiveMenuName' => $this->activeMenu,
             'PageTitle' => $this->pageTitle,
             'isEdit' => true,
-            'EditData' => DB::table(self::table)
-                ->where(self::primaryId, $saId)
-                ->get()
-                ->first()
+            'invoiceNumber' => $mainData->tranNo,
+            'EditData' => $mainData
         ]);
     }
 
@@ -341,7 +384,7 @@ class SaleController extends Controller {
                     ...$item, // single product
                     'detailId' => $itemNumber,
                     'tranNo' => $tranNo,
-                    'created_at' => now(),
+                    'createdAt' => now(),
                 ]; // updating docnum
 
                 $this->docNum->updateDocNum('SalesItem'); // updating documnet number
@@ -388,7 +431,7 @@ class SaleController extends Controller {
      */
     public function destroy(string $saId) {
         if (!$this->can('delete')) {
-            return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
+            // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
         $databaseDeletionData = (array) DB::table(self::table)
@@ -410,7 +453,7 @@ class SaleController extends Controller {
      */
     public function trashApi() {
         if (!$this->can('view')) {
-            return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
+            // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
 
         $columns = [
@@ -458,22 +501,22 @@ class SaleController extends Controller {
     public function restore(string $saId) {
 
         if (!$this->can('restore')) {
-            return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
+            // return response()->json(['status' => false, 'message' => "Un Authorized"], 401);
         }
         // fetching item
         $dataToRestore = (array) DB::table(self::table)
-            ->where('dflag', 1)
+            ->where('dFlag', 1)
             ->where(self::primaryId, $saId)
             ->get()
             ->toArray()[0];
 
         // not found
         if ($this->hasLength($dataToRestore)) {
-            return response()->json(['message' => "Database record does not exists"], 409);
+            // return response()->json(['message' => "Database record does not exists"], 409);
         }
 
         // dispatching delete
         LogForRestoredEvents::dispatch($dataToRestore, self::table);
-        return response()->json(['message' => "Sale restored Successfully"], 201);
+        return response()->json(['message' => "Sale restored Successfully"], 202);
     }
 }

@@ -2,371 +2,195 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <meta name="_token" content="{{ csrf_token() }}" />
-    <title>{{ config('app.name') }} - Admin</title>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+	<meta content="ie=edge" http-equiv="X-UA-Compatible" />
+	<meta content="{{ csrf_token() }}" name="_token" />
+	<title>{{ config('app.name') }} - Admin</title>
 
-    {{-- Krishna validatorjs --}}
-    <script src="https://cdn.jsdelivr.net/gh/Krish033/ValidatorJs/validator.js"></script>
+	{{-- 
+	@ Krishna -> Github modules
+	 --}}
+	<script src="https://cdn.jsdelivr.net/gh/Krish033/ValidatorJs/validator.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/krish033/GSTCalculator/build.min.js"></script>
 
-    {{-- ======================================================================================================
-    Google fonts
-    ====================================================================================================== --}}
-    <link href="https://fonts.gstatic.com" rel="preconnect" />
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet" />
+	{{-- 
+    @ Google fonts
+    --}}
+	<link href="https://fonts.gstatic.com" rel="preconnect" />
+	<link
+		href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+		rel="stylesheet" />
 
-    {{-- CSS ==================================================================================================
-    Data Tabe
-    ====================================================================================================== --}}
-    <link rel="stylesheet" href="{{url('/')}}/Assets2/plugins/DataTable/css/responsive.dataTables.min.css">
+	{{--
+    @ Jquery imports
+	--}}
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 
-    {{-- <link rel="stylesheet" type="text/css" href="{{url('/')}}/Assets2/css/datatable-extension.css"> --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.jqueryui.min.css" />
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+	{{-- 
+	@ SweetAlert imports
+		--}}
+	<link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.5/sweetalert2.css"
+		integrity="sha512-yqCpLPABHnpDe3/QgEm1OO4Ohq0BBlBtJGMh5JbhdYEb6nahIm7sbtjilfSFyzUhxdXHS/cm8+FYfNstfpxcrg=="
+		referrerpolicy="no-referrer" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.5/sweetalert2.min.js"
+		integrity="sha512-jt82OWotwBkVkh5JKtP573lNuKiPWjycJcDBtQJ3BkMTzu1dyu4ckGGFmDPxw/wgbKnX9kWeOn+06T41BeWitQ=="
+		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    {{-- CSS ==================================================================================================
-    Bootstrap
-    ====================================================================================================== --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	{{--
+	@ Bootstrap imports
+	--}}
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+		rel="stylesheet" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap-reboot.min.css" rel="stylesheet" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet" />
+	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" integrity="sha512-ZnR2wlLbSbr8/c9AgLg3jQPAattCUImNsae6NHYnS9KrIwRdcY9DxFotXhNAKIKbAXlRnujIqUWoXXwqyFOeIQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	{{--
+    @ DataTable imports
+	--}}
+	<script defer src="{{ url('/') }}/Assets2/js/dataTableExport.js"></script>
+	<script defer src="{{ url('/') }}/Assets2/DataTable/js/dataTables.responsive.min.js"></script>
 
-    {{-- CSS ==================================================================================================
-    Style plugins
-    ====================================================================================================== --}}
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/Assets2/plugins/dropify/css/dropify.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" />
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/css/loader.css">
-    <link rel="stylesheet" href="{{url('/')}}/assets/plugins/dynamic-form/v2/dynamicForm.min.css">
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/js/lightbox/css/lightgallery.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet" />
+	<link
+		href="https://cdn.datatables.net/v/bs4-4.6.0/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.css"
+		rel="stylesheet" />
 
-    {{-- CSS ==================================================================================================
-    Custom styles
-    ====================================================================================================== --}}
-    <link href="{{url('/')}}/Assets2/css/style.css" rel="stylesheet" />
-    <style>
-        .collapse,
-        .nav-item {
-            cursor: pointer;
-        }
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+	<script
+		src="https://cdn.datatables.net/v/bs4-4.6.0/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.js">
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script>
 
-        .table-img {
-            width: 40px;
-            height: 40px;
-        }
+	{{-- 
+	@ Toastr imports
+		--}}
+	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.css" rel="stylesheet" />
 
+	{{--
+	@ Dropify imports
+	--}}
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/Dropify/0.2.2/css/dropify.min.css" rel="stylesheet" />
+	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Dropify/0.2.2/js/dropify.js"></script>
 
-        i svg {
-            width: 20px !important;
-            height: 20px !important;
-            overflow: hidden;
-        }
+	{{--
+    @ Individual imports
+	--}}
+	@yield('styles')
 
+	{{--
+    @ Fontawesome icons
+	--}}
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
-        .label {
-            color: #000 !important;
-        }
+	{{--
+    @ Custom types
+	--}}
+	<link href="{{ url('/') }}/Assets2/css/style.css" rel="stylesheet" />
+	<script defer src="{{ url('/') }}/Assets2/js/main.js"></script>
+	<script defer src="https://unpkg.com/alpinejs"></script>
+	<script defer src="{{ url('/') }}/Assets2/helpers.js"></script>
 
-        button .svg-inline--fa {
-            pointer-events: none !important;
-        }
-
-
-        .card-footer-btn {
-            display: flex;
-            align-items: center;
-            border-top-left-radius: 0 !important;
-            border-top-right-radius: 0 !important;
-        }
-
-        .text-uppercase-bold-sm {
-            text-transform: uppercase !important;
-            font-weight: 500 !important;
-            letter-spacing: 2px !important;
-            font-size: .85rem !important;
-        }
-
-        .hover-lift-light {
-            transition: box-shadow .25s ease, transform .25s ease, color .25s ease, background-color .15s ease-in;
-        }
-
-        .justify-content-center {
-            justify-content: center !important;
-        }
-
-        .btn-group-lg>.btn,
-        .btn-lg {
-            padding: 0.8rem 1.85rem;
-            font-size: 1.1rem;
-            border-radius: 0.3rem;
-        }
-
-        .btn-dark {
-            color: #fff;
-            background-color: #1e2e50;
-            border-color: #1e2e50;
-        }
-
-        .card {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            word-wrap: break-word;
-            background-color: #fff;
-            background-clip: border-box;
-            border: 1px solid rgba(30, 46, 80, .09);
-            border-radius: 0.25rem;
-            box-shadow: 0 20px 27px 0 rgb(0 0 0 / 5%);
-        }
-
-        .p-5 {
-            padding: 3rem !important;
-        }
-
-        .card-body {
-            flex: 1 1 auto;
-            padding: 1.5rem 1.5rem;
-        }
-
-        tbody,
-        td,
-        tfoot,
-        th,
-        thead,
-        tr {
-            border-color: inherit;
-            border-style: solid;
-            border-width: 0;
-        }
-
-        .table td,
-        .table th {
-            border-bottom: 0;
-            border-top: 1px solid #edf2f9;
-        }
-
-        .table>:not(caption)>*>* {
-            padding: 1rem 1rem;
-            background-color: var(--bs-table-bg);
-            border-bottom-width: 1px;
-            box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
-        }
-
-        .px-0 {
-            padding-right: 0 !important;
-            padding-left: 0 !important;
-        }
-
-        .table thead th,
-        tbody td,
-        tbody th {
-            vertical-align: middle;
-        }
-
-        tbody,
-        td,
-        tfoot,
-        th,
-        thead,
-        tr {
-            border-color: inherit;
-            border-style: solid;
-            border-width: 0;
-        }
-
-        .mt-5 {
-            margin-top: 3rem !important;
-        }
-
-        .icon-circle[class*=text-] [fill]:not([fill=none]),
-        .icon-circle[class*=text-] svg:not([fill=none]),
-        .svg-icon[class*=text-] [fill]:not([fill=none]),
-        .svg-icon[class*=text-] svg:not([fill=none]) {
-            fill: currentColor !important;
-        }
-
-        .svg-icon>svg {
-            width: 1.45rem;
-            height: 1.45rem;
-        }
-
-    </style>
-
-    <style>
-        @media only screen and (max-width: 750px) {
-            .card-div-main {
-                width: 100% !important;
-            }
-        }
-
-    </style>
-
-    @yield('styles')
-
-    <link rel="stylesheet" href="{{url('/')}}/Assets2/plugins/sweet-alert/sweetalert.css">
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/css/themify.css">
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/css/icofont.css">
-    <!-- App css-->
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/css/style.css">
-
-    <link id="color" rel="stylesheet" href="{{url('/')}}/assets/css/color-1.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/css/responsive.css">
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/css/Custom.css">
-
-    {{-- ======================================================================================================
-    SCRIPTS
-    ====================================================================================================== --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-    <script src="https://unpkg.com/alpinejs" defer></script>
-
-    {{-- JS ==================================================================================================
-    Bootstrap
-    ====================================================================================================== --}}
-    <link rel="stylesheet" type="text/css" href="{{url('/')}}/assets/css/bootstrap.css">
-    <script src="{{url('/')}}/assets/js/bootstrap-multiselect/bootstrap-multiselect.js"></script>
-
-    {{-- JS ==================================================================================================
-    Data Tabe
-    ====================================================================================================== --}}
-    <script src="{{ url('/') }}/Assets2/js/dataTableExport.js"></script>
-    <script src="{{url('/')}}/assets/plugins/DataTable/js/jquery.dataTables.min.js"></script>
-    <script src="{{url('/')}}/assets/js/datatable/datatable-extension/dataTables.buttons.min.js">
-    </script>
-    <script src="{{url('/')}}/assets/js/datatable/datatable-extension/buttons.colVis.min.js">
-    </script>
-    <script src="{{url('/')}}/assets/js/datatable/datatable-extension/dataTables.autoFill.min.js">
-    </script>
-    <script src="{{url('/')}}/assets/js/datatable/datatable-extension/dataTables.select.min.js">
-    </script>
-    <script src="{{url('/')}}/assets/js/datatable/datatable-extension/buttons.bootstrap4.min.js">
-    </script>
-    <script src="{{url('/')}}/assets/js/datatable/datatable-extension/buttons.html5.js"></script>
-    <script src="{{url('/')}}/assets/js/datatable/datatable-extension/buttons.print.js"></script>
-    <script src="{{url('/')}}/assets/js/datatable/datatable-extension/dataTables.rowReorder.min.js">
-    </script>
-    <script src="{{url('/')}}/assets/plugins/DataTable/js/dataTables.responsive.min.js"></script>
-    <script src="{{url('/')}}/assets/js/dataTableExport.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-
-    {{-- JS ==================================================================================================
-    Pluginsx
-    ====================================================================================================== --}}
-    <script src="{{url('/')}}/assets/plugins/dropify/js/dropify.min.js"></script>
-    <script src="{{url('/')}}/assets/js/toastr.min.js"></script>
-    <script src="{{url('/')}}/assets/js/select2/select2.full.min.js"></script>
-    <script src="{{url('/')}}/assets/js/select2/select2-custom.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
-    <script src="{{url('/')}}/assets/plugins/bootbox-js/bootbox.min.js"></script>
-    <script src="{{url('/')}}/assets/js/custom-prototype.js"></script>
-    <script src="{{url('/')}}/Assets2/plugins/sweet-alert/sweetalert.js"></script>
-    <script src="{{url('/')}}/Assets2/plugins/sweet-alert/sweetalert.min.js"></script>
-    <script src="{{url('/')}}/Assets2/helpers.js"></script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.css" />
 </head>
 
 <body>
-    {{-- <textarea style="display: none;" id="txtThemeOption">{{json_encode($Theme)}}</textarea> --}}
-    <input type="hidden" name="txtActiveName" id="txtActiveName" value="{{$ActiveMenuName}}">
-    <input type="hidden" name="txtRootUrl" id="txtRootUrl" value="{{url('/')}}/">
-    {{-- <div id="divsettings" class="display-none">{{json_encode($Settings)}}</div> --}}
+	{{-- <textarea style="display: none;" id="txtThemeOption">{{json_encode($Theme)}}</textarea> --}}
+	<input id="txtActiveName" name="txtActiveName" type="hidden" value="{{ $ActiveMenuName }}">
+	<input id="txtRootUrl" name="txtRootUrl" type="hidden" value="{{ url('/') }}/">
+	{{-- <div id="divsettings" class="display-none">{{json_encode($Settings)}}</div> --}}
 
-    <header id="header" class="header fixed-top d-flex align-items-center">
-        <div class="d-flex align-items-center justify-content-between">
-            <a href="index.html" class="logo d-flex align-items-center">
-                <img src="{{ url('/') }}/Assets2/img/logo.png" alt="" />
-                <span class="d-none d-lg-block">{{ config('app.name') }}</span>
-            </a>
-            <i class="bi bi-list toggle-sidebar-btn"></i>
-        </div>
-        <nav class="header-nav ms-auto">
-            <ul class="d-flex align-items-center">
-                <li class="nav-item d-block d-lg-none">
-                    <a class="nav-link nav-icon search-bar-toggle" href="#">
-                        <i class="bi bi-search"></i>
-                    </a>
-                </li>
-                {{-- {{ dd($user) }} --}}
-                <li class="nav-item dropdown pe-3">
-                    <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                        <img src="{{is_null($UInfo->ProfileImage) ? url('/') . '/' . $UInfo->ProfileImage : 'https://freesvg.org/img/abstract-user-flat-1.png'}}" alt="" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover" />
+	<header class="header fixed-top d-flex align-items-center" id="header">
+		<div class="d-flex align-items-center justify-content-between">
+			<a class="logo d-flex align-items-center" href="index.html">
+				<img alt="" src="{{ url('/') }}/Assets2/img/logo.png" />
+				<span class="d-none d-lg-block">{{ config('app.name') }}</span>
+			</a>
+			<i class="bi bi-list toggle-sidebar-btn"></i>
+		</div>
+		<nav class="header-nav ms-auto">
+			<ul class="d-flex align-items-center">
+				<li class="nav-item d-block d-lg-none">
+					<a class="nav-link nav-icon search-bar-toggle" href="#">
+						<i class="bi bi-search"></i>
+					</a>
+				</li>
+				{{-- {{ dd($user) }} --}}
+				<li class="nav-item dropdown pe-3">
+					<a class="nav-link nav-profile d-flex align-items-center pe-0" data-bs-toggle="dropdown" href="#">
+						<img alt="" class="rounded-circle"
+							src="{{ is_null($UInfo->ProfileImage) ? url('/') . '/' . $UInfo->ProfileImage : 'https://freesvg.org/img/abstract-user-flat-1.png' }}"
+							style="width: 30px; height: 30px; object-fit: cover" />
 
+						<span class="d-none d-md-block dropdown-toggle ps-2">{{ auth()->user()->name }}</span> </a>
+					<ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+						<li class="dropdown-header">
+							<h6>{{ auth()->user()->name }}</h6>
+							<span>{{ auth()->user()->email }}</span>
+						</li>
+						<li>
+							<hr class="dropdown-divider" />
+						</li>
+						<li>
+							<a class="dropdown-item d-flex align-items-center" href="{{ url('/') }}/users-and-permissions/profile">
+								<i class="bi bi-person"></i>
+								<span>My Profile</span>
+							</a>
+						</li>
 
-                        <span class="d-none d-md-block dropdown-toggle ps-2">{{ auth()->user()->name }}</span> </a>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-                        <li class="dropdown-header">
-                            <h6>{{auth()->user()->name}}</h6>
-                            <span>{{ auth()->user()->email }}</span>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider" />
-                        </li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="{{ url('/') }}/users-and-permissions/profile">
-                                <i class="bi bi-person"></i>
-                                <span>My Profile</span>
-                            </a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider" />
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider" />
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider" />
-                        </li>
-                        <li>
-                            <form action="{{url('/')}}/logout" method="post">
-                                @csrf
-                                <button class="dropdown-item d-flex align-items-center" href="#">
-                                    <i class="bi bi-box-arrow-right"></i>
-                                    <span>Sign Out</span>
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-    </header>
-    <aside id="sidebar" class="sidebar">
-        <ul class="sidebar-nav" id="sidebar-nav">
-            @php
-            echo $menus;
-            @endphp
-        </ul>
-    </aside>
+						<li>
+							<form action="{{ url('/') }}/logout" method="post">
+								@csrf
+								<button class="dropdown-item d-flex align-items-center" href="#">
+									<i class="bi bi-box-arrow-right"></i>
+									<span>Sign Out</span>
+								</button>
+							</form>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</nav>
+	</header>
+	<aside class="sidebar" id="sidebar">
+		<ul class="sidebar-nav" id="sidebar-nav">
+			@php
+				echo $menus;
+			@endphp
+		</ul>
+	</aside>
 
-    <main id="main" class="main">
-        <section class="section dashboard">
-            @yield('content')
-        </section>
-    </main>
+	<main class="main" id="main">
+		@if (!$home)
+			<nav>
+				<ul class="breadcrumb main-bread">
+					<li class="main-bread-back"><a href="{{ url()->previous() }}/"><i class="fa fa-arrow-left"></i></a>
+					</li>
+					<li class="breadcrumb-item main-bread-home"><a href="{{ url('/') }}"><i class="fa fa-home"></i></a></li>
+					@foreach ($urls as $key => $breadcrumb)
+						<li class="breadcrumb-item"><a href="{{ $breadcrumb }}">{{ $key }}</a></li>
+					@endforeach
+				</ul>
+			</nav>
+		@endif
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js" integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<section class="section dashboard">
+			@yield('content')
+		</section>
+	</main>
 
-    <script src="{{url('/')}}/assets/js/bootstrap/popper.min.js"></script>
-    <script src="{{url('/')}}/assets/js/bootstrap/bootstrap.js"></script>
-    <script src="{{url('/')}}/assets/js/tooltip-init.js"></script>
-    <script src="{{url('/')}}/assets/js/custom.js"></script>
-    <script src="{{url('/')}}/assets/js/support.js"></script>
-    <script src="{{url('/')}}/Assets2/js/main.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('.dropify').dropify();
-        });
+	<script>
+		$(document).ready(function() {
+			$('.dropify').dropify();
+		});
+	</script>
 
-    </script>
-    {{-- Scripts --}}
-    @yield('scripts')
+	{{-- Scripts --}}
+	@yield('scripts')
+
 </body>
 
 </html>
