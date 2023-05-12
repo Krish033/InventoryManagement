@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 @section('content')
 	<div class="row justify-content-center">
-		<div class="col-md-8">
+		<div class="col-md-6">
 			<div class="card">
 				<div class="card-header text-center">
 					<h5 id="CardHeader">{{ $header }}</h5>
@@ -269,84 +269,60 @@
 				form.append(name, valid[1]);
 			});
 
-			$.ajax({
-				type: "post",
-				url: submiturl,
+			const swalConfig = {
+				title: "Are you Sure",
+				text: "{{ $isEdit ? 'Create' : 'Update' }} Customer?!",
+				type: "info",
+				showCancelButton: true,
+				confirmButtonClass: "btn-outline-success",
+				confirmButtonText: "Confrim",
+				closeOnConfirm: true,
+			}
 
-				headers: {
-					"X-CSRF-Token": $("meta[name=_token]").attr("content")
-				},
+			swal(swalConfig, () => {
+				$.ajax({
+					type: "post",
+					url: submiturl,
 
-				data: form,
-				processData: false,
-				contentType: false,
+					headers: {
+						"X-CSRF-Token": $("meta[name=_token]").attr("content")
+					},
 
-				beforeSend: function() {
-					ajaxindicatorstart("Please wait Upload Process on going.");
+					data: form,
+					processData: false,
+					contentType: false,
 
-					var percentVal = "0%";
+					error: function(e, x, settings, exception) {
+						ajax_errors(e, x, settings, exception);
+						toastr.error('Failes', e.responseJSON.message);
+					},
 
-					setTimeout(() => {
-						$("#divProcessText").html(
-							percentVal +
-							" Completed.<br> Please wait for until upload process complete."
-						);
-					}, 100);
-				},
+					success: function(response) {
+						document.documentElement.scrollTop = 0;
+						if (response.status == true) {
+							swal({
+								title: "SUCCESS",
+								text: response.message,
+								type: "success",
 
-				xhr: function() {
-					var xhr = new window.XMLHttpRequest();
-					xhr.upload.addEventListener(
-						"progress",
+								showCancelButton: false,
+								confirmButtonClass: "btn-outline-success",
+								confirmButtonText: "Okay",
+								closeOnConfirm: false,
+							}, function() {
+								@if ($isEdit == true)
+									// toastr.error('Failed', response?.message);
+									window.location.replace(
+										"{{ url('/') }}/master/Customer");
+								@else
+									// toastr.error('Failed', response?.message);
+									window.location.reload();
+								@endif
+							});
 
-						function(evt) {
-							if (evt.lengthComputable) {
-								var percentComplete = (evt.loaded / evt.total) * 100;
-								percentComplete = parseFloat(percentComplete).toFixed(2);
-								$("#divProcessText").html(
-									percentComplete +
-									"% Completed.<br> Please wait for until upload process complete."
-								);
-							}
-						}, false
-					);
-					return xhr;
-				},
-
-				error: function(e, x, settings, exception) {
-					ajax_errors(e, x, settings, exception);
-					toastr.error('Failes', e.responseJSON.message);
-				},
-
-				complete: function(e, x, settings, exception) {
-					btnReset($("#btnSubmit"));
-					ajaxindicatorstop();
-				},
-
-				success: function(response) {
-					document.documentElement.scrollTop = 0;
-					if (response.status == true) {
-						swal({
-							title: "SUCCESS",
-							text: response.message,
-							type: "success",
-
-							showCancelButton: false,
-							confirmButtonClass: "btn-outline-success",
-							confirmButtonText: "Okay",
-							closeOnConfirm: false,
-						}, function() {
-							@if ($isEdit == true)
-								// toastr.error('Failed', response?.message);
-								window.location.replace("{{ url('/') }}/master/Customer");
-							@else
-								// toastr.error('Failed', response?.message);
-								window.location.reload();
-							@endif
-						});
-
-					}
-				},
+						}
+					},
+				});
 			});
 		});
 	</script>

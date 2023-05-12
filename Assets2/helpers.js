@@ -1,54 +1,189 @@
-class Request {
+/**
+ * Latest swal function doesnot fit the requirements
+ * @param {*} obj
+ * @param {*} callback
+ */
+const swal = async (obj, callback) => {
+  const { isConfirmed, isDenied } = await Swal.fire({
+    ...obj,
+  });
 
-  routeUrl = "";
-  constructor(url) {
-    this.routeUrl = url
+  if (isConfirmed) {
+    callback();
+  }
+};
+
+/**
+ * Getting the first element from an array
+ * @param {*} array
+ * @returns ```array``` first element of an array
+ */
+const first = (array) => {
+  return array[0];
+};
+
+/**
+ * unwanted
+ * @param  {...any} main
+ */
+const ajaxindicatorstart = (...main) => {
+  console.log("Started");
+};
+
+/**
+ * unwanted
+ * @param  {...any} main
+ */
+const ajaxindicatorstop = (...main) => {
+  console.log("Stopped");
+};
+
+/**
+ * find if an item is null
+ * @param {*} data
+ * @returns
+ */
+const isNull = (data) => {
+  return data === null;
+};
+
+/**
+ * ---------------------------------------------
+ * ## Floats@feelingPowerful
+ * ---------------------------------------------
+ * Handle Floats and decimals, on your own way
+ */
+class Float {
+  /**
+   * Strip decimals
+   * @param {*} float
+   * @param {*} len
+   * @param {*} separator
+   * @returns
+   */
+  static decimals = (float, len = 2, separator = ".") => {
+    const splitted = new String(float).split(separator);
+
+    if (!splitted[1]) return float;
+
+    splitted[1] = splitted[1].substring(0, len);
+
+    const main = splitted.join(separator);
+    return parseFloat(main);
+  };
+}
+
+/**
+ * ---------------------------------------------
+ * ## Arrays@feelingPowerful
+ * ---------------------------------------------
+ * Working with object denyList
+ */
+class Arr {
+  // getting the object to work with
+  static object(obj) {
+    this.requestObject = obj;
+    return this;
   }
 
-  async http(ajaxConfiguration) {
-    ajaxConfiguration.url = this.routeUrl + ajaxConfiguration.url;
-    // main dfata return template
-    const defaultReturnData = {
-      data: [],
-      error: null,
-      isLoading: false,
-      isError: false,
-      isSuccess: false,
-    };
-
-    // main function
-    try {
-      defaultReturnData.isLoading = true;
-      // ajax request
-      const data = await $.ajax({
-        ...ajaxConfiguration,
-        headers: { "X-CSRF-Token": $("meta[name=_token]").attr("content") },
-      }); // unique way to get all the events
-
-      defaultReturnData.isSuccess = true;
-      defaultReturnData.data = data;
-
-      if (data.length) {
-        defaultReturnData.isLoading = false;
+  /**
+   * create an object without denyList
+   * @param {*} array
+   * @returns
+   */
+  static except(array = []) {
+    this.subObj = {};
+    // lowercasing the array
+    array = [...array].map((item) => item.toLocaleLowerCase());
+    // chcking if the method is not called on empty object
+    if (!this.requestObject)
+      throw new ReferenceError("Cannot create object on empty requests");
+    // adding item to array
+    Object.entries(this.requestObject).map((item) => {
+      if (!array.includes(item[0].toLocaleLowerCase())) {
+        this.subObj = { ...this.subObj, [item[0]]: item[1] };
       }
+    });
 
-      return defaultReturnData;
+    return this;
+  }
 
-    } catch (error) {
-      defaultReturnData.isError = true;
-      defaultReturnData.date = null;
-      
-      defaultReturnData.error = {
-        mesage: error?.responseJSON.message,
-        status: error?.status
-      };
-
-      console.log(defaultReturnData);
-      return defaultReturnData;
-    }
+  /**
+   * return the requested value
+   * @returns mainData
+   */
+  static get() {
+    return this.subObj;
   }
 }
 
-const createHttpRequest = (baseUrl = "https://localhost/Krishna/InventoryManagement") => {
-  return new Request(baseUrl);
+/**
+ * ---------------------------------------------
+ * ## Appends@feelingPowerful
+ * ---------------------------------------------
+ * Working with object denyList
+ */
+class Append {
+  constructor(parent) {
+    this.parent = parent;
+  }
+  /**
+   * Getting the ids to append
+   * @param {*} obj
+   * @returns
+   */
+  ids(obj) {
+    this.ids = obj;
+    return this;
+  }
+
+  /**
+   * Includes selected to add to values
+   * @returns this
+   */
+  includesSelect() {
+    this.selects = true;
+    return this;
+  }
+
+  /**
+   * Append values to DOM
+   */
+  create() {
+    Object.entries(this.ids).map((item) => {
+      const element = this.findElementById(item[0]);
+
+      if (element) {
+        element.value = item[1];
+      }
+
+      if (this.selects && element instanceof HTMLSelectElement) {
+        element.value == item[1];
+        element.selected = item[1].toLocaleLowerCase();
+        console.log(element.value);
+        // element.selected = element.value == item[1];
+      }
+    });
+
+    return true;
+  }
+
+  findElementById(item) {
+    const el = [
+      ...this.parent.querySelectorAll("input"),
+      ...this.parent.querySelectorAll("select"),
+    ];
+
+    if (!this.parent) {
+      throw new ReferenceError("Parent should be configured");
+    }
+
+    return (
+      first([...el.filter((e) => e.id.toLocaleLowerCase() === item)]) || false
+    );
+  }
+}
+
+const createAppend = (parent) => {
+  return new Append(parent);
 };

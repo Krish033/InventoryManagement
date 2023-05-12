@@ -1328,3 +1328,42 @@ table img{
   cursor: pointer !important;
 }
 
+
+.errors{
+  color: lightcoral !important;
+  font-size: .9em !important;
+}
+
+
+.error{
+  color: lightcoral !important;
+  font-size: .9em !important;
+}
+
+.dt-buttons{
+  float: left;
+  display: inline !important;
+  margin-bottom: -2em !important;
+}
+
+
+.dt-buttons::after{
+  content: '';
+  clear: left;
+}
+
+@media only screen and (max-width: 800px) {
+  .dt-buttons {
+    float: unset !important;
+    padding: 0;
+    margin: 0;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: center !important;
+  }
+
+  .dataTables_filter{
+    margin-top: 3em;
+  }
+}

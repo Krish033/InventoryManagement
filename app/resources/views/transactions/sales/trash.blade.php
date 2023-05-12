@@ -128,7 +128,6 @@
 						closeOnConfirm: true
 					},
 					function() {
-						swal.close();
 						$.ajax({
 							type: "post",
 

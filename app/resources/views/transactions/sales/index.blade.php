@@ -14,7 +14,7 @@
 									</div>
 									<div class="col-md-4 my-2 text-right text-md-right">
 										{{-- @if ($crud['restore'] == 1) --}}
-										<a class="btn  btn-outline-light btn-sm m-r-10" href="{{ route('sales.trash') }}" type="button"> Trash view
+										<a class="btn  btn-outline-dark btn-sm me-2" href="{{ route('sales.trash') }}" type="button"> Trash view
 										</a>
 										{{-- @endif --}}
 										{{-- @if ($crud['add'] == 1) --}}
@@ -134,10 +134,9 @@
 						showCancelButton: true,
 						confirmButtonClass: "btn-outline-danger",
 						confirmButtonText: "Yes, Delete it!",
-						closeOnConfirm: false
+						closeOnConfirm: true
 					},
 					function() {
-						swal.close();
 						$.ajax({
 							type: "post",
 							url: "{{ url('/') }}/transactions/sales/delete/" + id,

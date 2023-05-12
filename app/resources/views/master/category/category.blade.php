@@ -91,19 +91,20 @@
 				if (status) {
 					swal({
 						title: "Are you sure?",
-						text: "You want @if ($isEdit == true)Update @else Save @endif this Category!",
-						type: "warning",
+						text: "You want @if ($isEdit == true)Update @else Save @endif this Category?!",
+						type: "info",
 						showCancelButton: true,
-						confirmButtonClass: "btn-outline-success",
+						confirmButtonClass: "btn btn-outline-success",
 						confirmButtonText: "Yes, @if ($isEdit == true)Update @else Save @endif it!",
-						closeOnConfirm: false
+						closeOnConfirm: true
 					}, function() {
-						swal.close();
-						// btnLoading($('#btnSave'));
+
 						let postUrl = "{{ url('/') }}/master/category/create";
 						let formData = new FormData();
+
 						formData.append('CName', $('#txtCName').val());
 						formData.append('ActiveStatus', $('#lstActiveStatus').val());
+
 						if ($('#txtCImage').val() != "") {
 							formData.append('CImage', $('#txtCImage')[0].files[0]);
 						}
@@ -122,30 +123,13 @@
 							cache: false,
 							processData: false,
 							contentType: false,
-							xhr: function() {
-								var xhr = new window.XMLHttpRequest();
-								xhr.upload.addEventListener("progress", function(evt) {
-									if (evt.lengthComputable) {
-										var percentComplete = (evt.loaded / evt
-											.total) * 100;
-										percentComplete = parseFloat(
-											percentComplete).toFixed(2);
-										$('#divProcessText').html(percentComplete +
-											'% Completed.<br> Please wait for until upload process complete.'
-										);
-										//Do something with upload progress here
-									}
-								}, false);
-								return xhr;
-							},
+
 
 							error: function(e, x, settings, exception) {
 								ajax_errors(e, x, settings, exception);
+								toastr.error('Something went wrong', 'Failed')
 							},
-							complete: function(e, x, settings, exception) {
-								btnReset($('#btnSave'));
-								ajaxindicatorstop();
-							},
+
 							success: function(response) {
 								document.documentElement.scrollTop =
 									0; // For Chrome, Firefox, IE and Opera
@@ -170,13 +154,8 @@
 									});
 
 								} else {
-									toastr.error(response.message, "Failed", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.error(response.message, "Failed")
+
 									if (response['errors'] != undefined) {
 										$('.errors').html('');
 										$.each(response['errors'], function(KeyName,

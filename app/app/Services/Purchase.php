@@ -25,6 +25,15 @@ class Purchase extends Controller {
             ->get();
     }
 
+
+    protected function requestSingleCategoryRecords(string $cid) {
+        return DB::table('tbl_category')
+            ->where('DFlag', 0)
+            ->where('ActiveStatus', 1)
+            ->where('CID', $cid)
+            ->first();
+    }
+
     /**
      * Get subCategories related to the category
      * @param string $cid
@@ -36,6 +45,14 @@ class Purchase extends Controller {
             ->where('ActiveStatus', 1)
             ->where('CID', $cid)
             ->get(['SCID', 'SCName']);
+    }
+
+    protected function requestSingleSubCategoryRecords(string $scId) {
+        return DB::table('tbl_subcategory')
+            ->where('DFlag', 0)
+            ->where('ActiveStatus', 1)
+            ->where('SCID', $scId)
+            ->first();
     }
 
     /**

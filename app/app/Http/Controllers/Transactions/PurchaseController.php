@@ -15,7 +15,9 @@ use App\Http\Requests\Transactions\PurchaseUpdateRequest;
 use App\Models\DocNum;
 use App\Models\general;
 use App\Models\ServerSideProcess;
+use App\Services\GeneralService;
 use App\Services\Purchase;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -101,7 +103,6 @@ class PurchaseController extends Purchase {
         if (!$this->can('view')) {
             // abort(401, "Un Authorized");
         }
-
         /**
          * Data to be send to views
          */
@@ -124,21 +125,27 @@ class PurchaseController extends Purchase {
 
         $columns = [
             ['db' => 'tranNo', 'dt' => '0'],
-            ['db' => 'tranDate', 'dt' => '1'],
+            ['db' => 'tranDate', 'dt' => '1', "formatter" => function ($d) {
+                return (new Carbon($d))->format('d-m-Y');
+            }],
             ['db' => 'invoiceNo', 'dt' => '2'],
             ['db' => 'supplierId', 'dt' => '3'],
             ['db' => 'mop', 'dt' => '4'],
-            ['db' => 'taxable', 'dt' => '5'],
-            ['db' => 'taxAmount', 'dt' => '6'],
-            ['db' => 'TotalAmount', 'dt' => '7'],
-            ['db' => 'paidAmount', 'dt' => '8'],
-            ['db' => 'balanceAmount', 'dt' => '9'],
+            ['db' => 'taxable', 'dt' => '5', "formatter" => function ($d) {
+                return GeneralService::decimals($d);
+            }],
+            ['db' => 'taxAmount', 'dt' => '6', "formatter" => function ($d) {
+                return GeneralService::decimals($d);
+            }],
+            ['db' => 'TotalAmount', 'dt' => '7', "formatter" => function ($d) {
+                return GeneralService::decimals($d);
+            }],
 
             // buttons
             [
                 'db' => 'tranNo',
-                'dt' => '10',
-                'formatter' => function ($d, $row) {
+                'dt' => '8',
+                'formatter' => function ($d) {
 
                     $html = '
                         <a type="button" 
@@ -359,20 +366,26 @@ class PurchaseController extends Purchase {
 
         $columns = [
             ['db' => 'tranNo', 'dt' => '0'],
-            ['db' => 'tranDate', 'dt' => '1'],
-            ['db' => 'supplierId', 'dt' => '2'],
-            ['db' => 'invoiceNo', 'dt' => '3'],
+            ['db' => 'tranDate', 'dt' => '1', "formatter" => function ($d) {
+                return (new Carbon($d))->format('d-m-Y');
+            }],
+            ['db' => 'invoiceNo', 'dt' => '2'],
+            ['db' => 'supplierId', 'dt' => '3'],
             ['db' => 'mop', 'dt' => '4'],
-            ['db' => 'taxable', 'dt' => '5'],
-            ['db' => 'taxAmount', 'dt' => '6'],
-            ['db' => 'TotalAmount', 'dt' => '7'],
-            ['db' => 'paidAmount', 'dt' => '8'],
-            ['db' => 'balanceAmount', 'dt' => '9'],
+            ['db' => 'taxable', 'dt' => '5', "formatter" => function ($d) {
+                return GeneralService::decimals($d);
+            }],
+            ['db' => 'taxAmount', 'dt' => '6', "formatter" => function ($d) {
+                return GeneralService::decimals($d);
+            }],
+            ['db' => 'TotalAmount', 'dt' => '7', "formatter" => function ($d) {
+                return GeneralService::decimals($d);
+            }],
 
             // buttons
             [
                 'db' => 'tranNo',
-                'dt' => '10',
+                'dt' => '8',
                 'formatter' => function ($d, $row) {
                     $html = '
                     <button 
@@ -444,6 +457,10 @@ class PurchaseController extends Purchase {
         return response()->json([...$this->requestCategoryRecords()], 200);
     }
 
+    public function requestSingleCategories($cid) {
+        return $this->requestSubCategoryRecords($cid);
+    }
+
     /**
      * Summary of requestSubcategories
      * @param string $cid
@@ -451,6 +468,10 @@ class PurchaseController extends Purchase {
      */
     public function requestSubcategories(string $cid) {
         return response()->json([...$this->requestSubCategoryRecords($cid)]);
+    }
+
+    public function requestSingleSubCategories(string $cid) {
+        return $this->requestSingleSubCategoryRecords($cid);
     }
 
     /**
@@ -485,9 +506,31 @@ class PurchaseController extends Purchase {
      * @return array
      */
     public function requestCreatedProducts(string $tranNo) {
-        return DB::table('tbl_purchase_details')
+
+        $nodes = DB::table('tbl_purchase_details')
             ->where('tranNo', $tranNo)
-            ->get()->toArray();
+            ->get();
+
+        return $nodes->map(function ($item) {
+
+            $item = (array) $item;
+
+            return [
+                ...$item,
+                "category" => DB::table('tbl_category')
+                    ->where('CID', $item['categoryId'])
+                    ->pluck('CName'),
+
+                "subCategory" => DB::table('tbl_subcategory')
+                    ->where('SCID', $item['subCategoryId'])
+                    ->pluck('SCName'),
+
+                "product" => DB::table('tbl_products')
+                    ->where('pid', $item['productId'])
+                    ->pluck('name'),
+            ];
+        })->toArray();
+
     }
 
 

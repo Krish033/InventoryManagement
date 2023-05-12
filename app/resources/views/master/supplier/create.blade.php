@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 @section('content')
 	<div class="row justify-content-center">
-		<div class="col-md-8">
+		<div class="col-md-6">
 			<div class="card">
 				<div class="card-header text-center">
 					<h5 id="CardHeader">{{ $header }}</h5>
@@ -261,76 +261,55 @@
 				form.append(valid[0], valid[1]);
 			});
 
-			$.ajax({ // Ajax form submit
-				type: "post",
-				url: submiturl, // Dynamic url
-				headers: { // CSRF
-					"X-CSRF-Token": $("meta[name=_token]").attr("content")
-				},
-				data: form,
-				processData: false,
-				contentType: false,
-				// prepare loaders
-				beforeSend: function() {
-					ajaxindicatorstart("Please wait Upload Process on going.");
-					var percentVal = "0%";
-					setTimeout(() => {
-						$("#divProcessText").html(
-							percentVal +
-							" Completed.<br> Please wait for until upload process complete."
-						);
-					}, 100);
-				}, // load function
-				xhr: function() {
-					var xhr = new window.XMLHttpRequest();
-					xhr.upload.addEventListener(
-						"progress",
-						function(evt) {
-							if (evt.lengthComputable) {
-								var percentComplete = (evt.loaded / evt.total) * 100;
-								percentComplete = parseFloat(percentComplete).toFixed(2);
-								$("#divProcessText").html(
-									percentComplete +
-									"% Completed.<br> Please wait for until upload process complete."
-								);
-							}
-						},
-						false
-					);
-					return xhr;
-				},
-				// Error
-				error: function(e, x, settings, exception) {
-					ajax_errors(e, x, settings, exception);
-					toastr.error('Failes', e.responseJSON?.message);
-				},
-				// Complete
-				complete: function(e, x, settings, exception) {
-					btnReset($("#btnSubmit"));
-					ajaxindicatorstop();
-				},
-				// Success
-				success: function(response) {
-					document.documentElement.scrollTop = 0;
-					if (response.status == true) {
-						swal({
-							title: "SUCCESS",
-							text: response.message,
-							type: "success",
+			const swalConfig = {
+				title: "Are you sure",
+				text: "{{ $isEdit ? 'Update' : 'Create' }} supplier?!",
+				type: "info",
+				showCancelButton: true,
+				confirmButtonClass: "btn btn-outline-success",
+				confirmButtonText: "Confrim",
+				closeOnConfirm: true,
+			}
 
-							showCancelButton: false,
-							confirmButtonClass: "btn-outline-success",
-							confirmButtonText: "Okay",
-							closeOnConfirm: false,
-						}, function() {
-							@if ($isEdit == true)
-								window.location.replace("{{ url('/') }}/master/suppliers");
-							@else
-								window.location.reload();
-							@endif
-						});
-					}
-				},
+			swal(swalConfig, () => {
+				$.ajax({ // Ajax form submit
+					type: "post",
+					url: submiturl, // Dynamic url
+					headers: { // CSRF
+						"X-CSRF-Token": $("meta[name=_token]").attr("content")
+					},
+					data: form,
+					processData: false,
+					contentType: false,
+
+					// Error
+					error: function(e, x, settings, exception) {
+						ajax_errors(e, x, settings, exception);
+						toastr.error('Failes', e.responseJSON?.message);
+					},
+					// Success
+					success: function(response) {
+						document.documentElement.scrollTop = 0;
+						if (response.status == true) {
+							swal({
+								title: "SUCCESS",
+								text: response.message,
+								type: "success",
+								showCancelButton: false,
+								confirmButtonClass: "btn-outline-success",
+								confirmButtonText: "Okay",
+								closeOnConfirm: false,
+							}, function() {
+								@if ($isEdit == true)
+									window.location.replace(
+										"{{ url('/') }}/master/suppliers");
+								@else
+									window.location.reload();
+								@endif
+							});
+						}
+					},
+				});
 			});
 		});
 	</script>

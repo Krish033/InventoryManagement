@@ -5,7 +5,6 @@ namespace App\Services;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
-use stdClass;
 
 class PageHeaderService {
 

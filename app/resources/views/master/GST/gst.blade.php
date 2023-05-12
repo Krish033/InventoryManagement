@@ -103,8 +103,8 @@
 						confirmButtonText: "Yes, @if ($isEdit == true)Update @else Save @endif it!",
 						closeOnConfirm: false
 					}, function() {
-						swal.close();
-						btnLoading($('#btnSave'));
+						// swal.close();
+						// btnLoading($('#btnSave'));
 						let postUrl = "{{ url('/') }}/master/gst/create";
 						let formData = new FormData();
 						formData.append('GstName', $('#txtGST').val());
@@ -155,7 +155,7 @@
 								ajax_errors(e, x, settings, exception);
 							},
 							complete: function(e, x, settings, exception) {
-								btnReset($('#btnSave'));
+								// btnReset($('#btnSave'));
 								ajaxindicatorstop();
 							},
 							success: function(response) {

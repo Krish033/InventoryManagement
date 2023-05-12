@@ -24,12 +24,10 @@
 											<th class="text-center">Number</th>
 											<th class="text-center">Date</th>
 											<th class="text-center">Invoice Number</th>
-											<th class="text-center">supplier</th>
+											<th class="text-center">Supplier</th>
 											<th class="text-center">MOP</th>
-											<th class="text-center">taxable</th>
-											<th class="text-center">taxAmount</th>
-											<th class="text-center">paidAmount</th>
-											<th class="text-center">balanceAmount</th>
+											<th class="text-center">Taxable</th>
+											<th class="text-center">TaxAmount</th>
 											<th class="text-center">TotalAmount</th>
 											<th class="text-center">Actions</th>
 										</tr>
@@ -75,12 +73,20 @@
 						[10, 25, 50, 100, 250, 500, "All"]
 					],
 					columnDefs: [{
-							"className": "dt-center",
-							"targets": 2
+							targets: 2,
+							className: 'dt-body-center'
 						},
 						{
-							"className": "dt-center",
-							"targets": 3
+							targets: 5,
+							className: 'dt-body-right'
+						},
+						{
+							targets: 6,
+							className: 'dt-body-right'
+						},
+						{
+							targets: 7,
+							className: 'dt-body-right'
 						}
 					],
 					buttons: [
@@ -126,10 +132,9 @@
 						showCancelButton: true,
 						confirmButtonClass: "btn-outline-success",
 						confirmButtonText: "Restore",
-						closeOnConfirm: false
+						closeOnConfirm: true
 					},
 					function() {
-						swal.close();
 						$.ajax({
 							type: "post",
 							url: "{{ url('/') }}/transactions/purchase/restore/" + id,
@@ -139,7 +144,6 @@
 							dataType: "json",
 							success: function(response) {
 								$('#tblpurchase').DataTable().ajax.reload();
-								swal.close();
 								if (response.status == true) {
 									$('#tblcustomer').DataTable().ajax.reload();
 									toastr.success(response.message, "Success")

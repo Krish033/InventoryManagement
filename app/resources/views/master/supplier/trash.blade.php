@@ -13,7 +13,7 @@
 										<h5>{{ $header }}</h5>
 									</div>
 									<div class="col-md-4 my-2 text-right text-md-right">
-										<a class="btn  btn-outline-light btn-sm m-r-10" href="{{ url('/') }}/master/suppliers"
+										<a class="btn  btn-outline-dark btn-sm me-2" href="{{ url('/') }}/master/suppliers"
 											type="button">Back</a>
 									</div>
 								</div>
@@ -71,7 +71,7 @@
 								, {
 									extend: 'excel',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -82,7 +82,7 @@
 								, {
 									extend: 'copy',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -93,7 +93,7 @@
 								, {
 									extend: 'csv',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -104,7 +104,7 @@
 								, {
 									extend: 'print',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -115,7 +115,7 @@
 								, {
 									extend: 'pdf',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -145,10 +145,10 @@
 						showCancelButton: true,
 						confirmButtonClass: "btn-outline-success",
 						confirmButtonText: "Yes, Restore it!",
-						closeOnConfirm: false
+						closeOnConfirm: true
 					},
 					function() {
-						swal.close();
+
 						$.ajax({
 							type: "post",
 							url: "{{ url('/') }}/master/suppliers/restore/" + ID,
@@ -158,10 +158,10 @@
 							dataType: "json",
 							error: function(e, x, settings, exception) {
 								ajax_errors(e, x, settings, exception);
-								swal.close();
+
 							},
 							success: function(response) {
-								swal.close();
+
 								if (response.status == true) {
 									$('#tblsupplier').DataTable().ajax.reload();
 

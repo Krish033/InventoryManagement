@@ -14,8 +14,8 @@
 									</div>
 									<div class="col-md-4 my-2 text-right text-md-right">
 										@if ($crud['restore'] == 1)
-											<a class="btn  btn-outline-light btn-sm m-r-10" href="{{ url('/') }}/master/tax/trash-view"
-												type="button"> Trash view </a>
+											<a class="btn  btn-outline-dark btn-sm me-2" href="{{ url('/') }}/master/tax/trash-view" type="button">
+												Trash view </a>
 										@endif
 										@if ($crud['add'] == 1)
 											<a class="btn  btn-outline-success btn-air-success btn-sm" href="{{ url('/') }}/master/tax/create"
@@ -155,7 +155,7 @@
 						closeOnConfirm: false
 					},
 					function() {
-						swal.close();
+						// swal.close();
 						$.ajax({
 							type: "post",
 							url: "{{ url('/') }}/master/gst/delete/" + ID,
@@ -164,24 +164,12 @@
 							},
 							dataType: "json",
 							success: function(response) {
-								swal.close();
+								// swal.close();
 								if (response.status == true) {
 									$('#tblcustomer').DataTable().ajax.reload();
-									toastr.success(response.message, "Success", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.success(response.message, "Success")
 								} else {
-									toastr.error(response.message, "Failed", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.error(response.message, "Failed")
 								}
 							}
 						});

@@ -158,7 +158,7 @@
 						closeOnConfirm: false
 					},
 					function() {
-						swal.close();
+						// swal.close();
 						$.ajax({
 							type: "post",
 							url: "{{ url('/') }}/master/category/delete/" + ID,
@@ -167,24 +167,12 @@
 							},
 							dataType: "json",
 							success: function(response) {
-								swal.close();
+								// swal.close();
 								if (response.status == true) {
 									$('#tblCategory').DataTable().ajax.reload();
-									toastr.success(response.message, "Success", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.success(response.message, "Success")
 								} else {
-									toastr.error(response.message, "Failed", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.error(response.message, "Failed")
 								}
 							}
 						});

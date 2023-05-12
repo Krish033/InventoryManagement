@@ -106,12 +106,11 @@ class ProductController extends Controller {
                     'formatter' => function ($d, $row) {
                         $html = '';
                         if ($this->general->isCrudAllow($this->CRUD, "edit") == true) {
-
                             $html .= '
                             <a type="button" 
                                 href="' . route('product.edit', $d) . '" 
                                 data-id="' . $d . '" 
-                                class="btn btn-outline-success btn-sm -success mr-10 btnEdit" 
+                                class="btn btn-outline-success btn-sm me-2 btnEdit" 
                                 id="supplierViewEditBtn" 
                                 data-original-title="Edit"
                             >
@@ -503,12 +502,16 @@ class ProductController extends Controller {
     // categories
     public function categories() {
         return DB::table('tbl_category')
+            ->where('DFlag', 0)
+            ->where('ActiveStatus', 1)
             ->get(['CID', 'CName']);
     }
 
     // subcategorues
     public function subCategories(Request $request) {
         return DB::table('tbl_subcategory')
+            ->where('DFlag', 0)
+            ->where('ActiveStatus', 1)
             ->where('CID', '=', $request->category)
             ->get(['SCID', 'SCName']);
     }

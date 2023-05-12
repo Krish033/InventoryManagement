@@ -237,30 +237,30 @@ class category extends Controller {
 
 	public function Delete(Request $req, $CID) {
 		$OldData = $NewData = array();
-		if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
-			DB::beginTransaction();
-			$status = false;
-			try {
-				$OldData = DB::table('tbl_category')->where('CID', $CID)->get();
-				$status = DB::table('tbl_category')->where('CID', $CID)->update(array("DFlag" => 1, "DeletedBy" => $this->UserID, "DeletedOn" => date("Y-m-d H:i:s")));
-			} catch (Exception $e) {
+		// if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
+		DB::beginTransaction();
+		$status = false;
+		try {
+			$OldData = DB::table('tbl_category')->where('CID', $CID)->get();
+			$status = DB::table('tbl_category')->where('CID', $CID)->update(array("DFlag" => 1, "DeletedBy" => $this->UserID, "DeletedOn" => date("Y-m-d H:i:s")));
+		} catch (Exception $e) {
 
-			}
-			if ($status == true) {
-				DB::commit();
-				$logData = array("Description" => "Category has been Deleted ", "ModuleName" => "Category", "Action" => "Delete", "ReferID" => $CID, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
-				$this->logs->Store($logData);
-				session()->flash('success', 'Category Deleted Successfully');
-				return array('status' => true, 'message' => "Category Deleted Successfully");
-			} else {
-				DB::rollback();
-				session()->flash('error', 'Category Deletion Failed');
-				return array('status' => false, 'message' => "Category Delete Failed");
-			}
-		} else {
-			session()->flash('error', 'Access denied');
-			return response(array('status' => false, 'message' => "Access Denied"), 403);
 		}
+		if ($status == true) {
+			DB::commit();
+			$logData = array("Description" => "Category has been Deleted ", "ModuleName" => "Category", "Action" => "Delete", "ReferID" => $CID, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
+			$this->logs->Store($logData);
+			session()->flash('success', 'Category Deleted Successfully');
+			return array('status' => true, 'message' => "Category Deleted Successfully");
+		} else {
+			DB::rollback();
+			session()->flash('error', 'Category Deletion Failed');
+			return array('status' => false, 'message' => "Category Delete Failed");
+		}
+		// } else {
+		// 	session()->flash('error', 'Access denied');
+		// 	return response(array('status' => false, 'message' => "Access Denied"), 403);
+		// }
 	}
 	public function Restore(Request $req, $CID) {
 		$OldData = $NewData = array();

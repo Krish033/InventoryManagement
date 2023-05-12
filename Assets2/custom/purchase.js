@@ -6,6 +6,13 @@ const tooltipList = [...tooltipTriggerList].map(
   (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
 );
 
+/**
+ * update already existing items
+ * @confrimUpdate
+ * @default true
+ */
+const confrimUpdate = false;
+
 const currency = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",
@@ -15,12 +22,12 @@ const currency = new Intl.NumberFormat("en-IN", {
 const createSelectOption = (parent, data, key, value, selected) => {
   // createing item
   if (!(data instanceof Array)) {
-    return toastr.error('Something went wrong!', 'Error');
+    return toastr.error("Something went wrong!", "Error");
   }
 
   const defaultOpt = defaultOption();
   parent.innerHTML = "";
-  parent.appendChild(defaultOpt)
+  parent.appendChild(defaultOpt);
 
   data?.map((item) => {
     const option = document.createElement("option");
@@ -40,9 +47,9 @@ const defaultOption = () => {
   defaultOption.textContent = "Select";
   defaultOption.value = "";
   defaultOption.disabled = "";
-  
+
   return defaultOption;
-}
+};
 
 const totalAmount = (taxable, calculatedTaxAmount) => {
   const subtotal = document.querySelector("#subtotal");
@@ -194,12 +201,36 @@ const requestTotalTax = () => {
   return sum;
 };
 
-const disableInputs = () => {
-  const disabled = ["quantity", "price", "tax", "subCategoryId", "productId"];
+const disableInputs = (array = []) => {
+  const disabled = [
+    "quantity",
+    "price",
+    "tax",
+    "subCategoryId",
+    "productId",
+    ...array,
+  ];
 
   disabled.forEach((item) => {
     if (document.querySelector("#" + item) !== null) {
       document.querySelector("#" + item).classList.add("disabled");
+    }
+  });
+};
+
+const disable = (disabled = []) => {
+  [...disabled].forEach((item) => {
+    if (document.querySelector("#" + item) !== null) {
+      document.querySelector("#" + item).classList.add("disabled");
+    }
+  });
+};
+
+const enable = (disabled = []) => {
+  [...disabled].forEach((main) => {
+    const item = document.querySelector("#" + main);
+    if (item && item.classList.contains("disabled")) {
+      item.classList.remove("disabled");
     }
   });
 };
@@ -234,9 +265,17 @@ const hasTwin = (obj) => {
   const parentNode = document.querySelector("#createTable");
   const twin = parentNode.children;
 
+  // object has product id
+  const mainTwin = parentNode.querySelector(
+    `[data-productId='${obj.productId}']`
+  );
+
+  const beingEdited = document.querySelector(".editing");
+
   let found = false;
   [...twin].map((item) => {
     if (
+      mainTwin != null &&
       item.dataset.taxtype === obj.taxType &&
       item.dataset.taxpercentage == obj.taxPercentage
     ) {
@@ -265,59 +304,49 @@ const getItem = (obj) => {
   return main[0];
 };
 
-const addToTwin = (obj) => {
-  const parentNode = document.querySelector("#createTable");
+const addToTwin = (twin, obj) => {
+  // quantity
+  twin.querySelector("#item-quantity").innerText =
+    parseFloat(twin.dataset.quantity) + parseFloat(obj.quantity);
+  twin.setAttribute(
+    "data-quantity",
+    parseFloat(twin.dataset.quantity) + parseFloat(obj.quantity)
+  );
 
-  const swalConfiguration = {
-    title: "Cannot create new Product?",
-    text: "THe product you have created has a twin!",
-    type: "warning",
-    showCancelButton: true,
-    confirmButtonClass: "btn-outline-success",
-    confirmButtonText: "Update product",
-    closeOnConfirm: true,
-  };
+  twin.querySelector("#item-taxable").innerText = currency.format(
+    parseFloat(twin.dataset.taxable) + parseFloat(obj.taxable)
+  );
 
-  swal(swalConfiguration, () => {
-    const twin = getItem(obj);
+  twin.setAttribute(
+    "data-taxable",
+    parseFloat(twin.dataset.taxable) + parseFloat(obj.taxable)
+  );
 
-    // quantity
-    twin.querySelector("#item-quantity").innerText =
-      parseFloat(twin.dataset.quantity) + parseFloat(obj.quantity);
-    twin.setAttribute(
-      "data-quantity",
-      parseFloat(twin.dataset.quantity) + parseFloat(obj.quantity)
-    );
+  twin.querySelector("#item-taxAmount").innerText = currency.format(
+    parseFloat(twin.dataset.taxamount) + parseFloat(obj.taxAmount)
+  );
 
-    twin.querySelector("#item-taxable").innerText = currency.format(
-      parseFloat(twin.dataset.taxable) + parseFloat(obj.taxable)
-    );
-    twin.setAttribute(
-      "data-taxable",
-      parseFloat(twin.dataset.taxable) + parseFloat(obj.taxable)
-    );
+  twin.setAttribute(
+    "data-taxAmount",
+    parseFloat(twin.dataset.taxamount) + parseFloat(obj.taxAmount)
+  );
 
-    twin.querySelector("#item-taxAmount").innerText = currency.format(
-      parseFloat(twin.dataset.taxamount) + parseFloat(obj.taxAmount)
-    );
-    twin.setAttribute(
-      "data-taxAmount",
-      parseFloat(twin.dataset.taxamount) + parseFloat(obj.taxAmount)
-    );
+  twin.querySelector("#item-subtotal").innerText = currency.format(
+    parseFloat(twin.dataset.subtotal) + parseFloat(obj.subtotal)
+  );
 
-    twin.querySelector("#item-subtotal").innerText = currency.format(
-      parseFloat(twin.dataset.subtotal) + parseFloat(obj.subtotal)
-    );
-    twin.setAttribute(
-      "data-subtotal",
-      parseFloat(twin.dataset.subtotal) + parseFloat(obj.subtotal)
-    );
+  twin.setAttribute(
+    "data-subtotal",
+    parseFloat(twin.dataset.subtotal) + parseFloat(obj.subtotal)
+  );
 
-    twin.querySelector("#item-description").innerText = obj?.description;
-    clearInputs();
-    getCategoryItems();
-    genepriceGrandTotal();
-  });
+  twin.querySelector("#item-description").textContent = obj?.description;
+  twin.setAttribute("data-description", obj?.description);
+
+  clearInputs();
+
+  getCategoryItems();
+  genepriceGrandTotal();
   return true;
 };
 
@@ -344,19 +373,16 @@ const createDOMElement = async (obj) => {
   parentNode.appendChild(tr);
   // category
   const category = document.createElement("td");
-  category.textContent = obj?.categoryId;
+  category.textContent = obj?.category;
   tr.appendChild(category);
   // category
   const subcategory = document.createElement("td");
-  subcategory.textContent = obj.subCategoryId;
+  subcategory.textContent = obj.subCategory;
   tr.appendChild(subcategory);
-
-  // getting product details
-  const { data: singleProduct } = await requestSingleProducts(obj.productId);
 
   // category
   const product = document.createElement("td");
-  product.textContent = singleProduct.name;
+  product.textContent = obj.product;
   tr.appendChild(product);
   // category
   const description = document.createElement("td");
@@ -367,10 +393,12 @@ const createDOMElement = async (obj) => {
   const qty = document.createElement("td");
   qty.textContent = obj.quantity;
   qty.setAttribute("id", "item-quantity");
+  qty.setAttribute("align", "right");
   tr.appendChild(qty);
   // category
   const price = document.createElement("td");
   price.textContent = obj.price;
+  price.setAttribute("align", "right");
   tr.appendChild(price);
   // category
   const taxType = document.createElement("td");
@@ -379,17 +407,22 @@ const createDOMElement = async (obj) => {
   // category
   const taxPercentage = document.createElement("td");
   taxPercentage.textContent = obj.taxPercentage;
+  taxPercentage.setAttribute("align", "right");
   tr.appendChild(taxPercentage);
   // category
   const taxable = document.createElement("td");
   // qty.setAttribute("id", "item-quantity");
   taxable.id = "item-taxable";
+  taxable.setAttribute("align", "right");
+
   taxable.textContent = currency.format(obj.taxable);
   tr.appendChild(taxable);
 
   const taxAmount = document.createElement("td");
   taxAmount.textContent = currency.format(obj.taxAmount);
   taxAmount.id = "item-taxAmount";
+  taxAmount.setAttribute("align", "right");
+
   taxAmount.setAttribute("data-tax-subtotal-element", obj.taxAmount);
   tr.appendChild(taxAmount);
 
@@ -397,6 +430,8 @@ const createDOMElement = async (obj) => {
   subtotal.id = "item-subtotal";
   subtotal.textContent = currency.format(obj.subtotal);
   taxable.setAttribute("data-subtotal-element", obj.taxable);
+  subtotal.setAttribute("align", "right");
+
   tr.appendChild(subtotal);
   // button
   const td = document.createElement("td");
@@ -416,10 +451,10 @@ const createDOMElement = async (obj) => {
   btn.addEventListener("click", () => {
     const swalConfiguration = {
       title: "Are you sure?",
-      text: "Create this purchase!",
-      type: "info",
+      text: "remove this product from the list!",
+      type: "danger",
       showCancelButton: true,
-      confirmButtonClass: "btn-outline-success",
+      confirmButtonClass: "btn-outline-danger",
       confirmButtonText: "Confrim",
       closeOnConfirm: true,
     };
@@ -497,11 +532,12 @@ const updateEverything = () => {
     taxableValue,
     isNaN(taxPercent) ? 0.0 : taxPercent
   );
+
   // dont calculate tax if excluded
   if (taxtype.value == "include") {
     if (!isNaN(taxPercent)) {
       //formula
-      // ! GSTCalculatedTotalAmount * (100 / (100 + taxPercent))
+      // @ GSTCalculatedTotalAmount * (100 / (100 + taxPercent))
       const GSTCalculatedTotalAmount = calculateTaxAmount(
         taxable.value,
         taxPercent
@@ -509,19 +545,187 @@ const updateEverything = () => {
 
       const main = GSTCalculatedTotalAmount * (100 / (100 + taxPercent));
       const subTaxable = rateValue * quantityValue; // 2500
-      taxable.value = subTaxable - main;
-      taxAmount.value = main;
+      taxable.value = Float.decimals(subTaxable - main);
+      taxAmount.value = Float.decimals(main);
     }
   }
 
   if (taxtype.value == "exclude") {
     if (!isNaN(taxPercent)) {
       // formula
-      // ! taxableValue + taxableValue * (taxPercent / 100) - taxableValue
-      taxAmount.value =
-        taxableValue + taxableValue * (taxPercent / 100) - taxableValue;
+      // @ taxableValue + taxableValue * (taxPercent / 100) - taxableValue
+      taxAmount.value = Float.decimals(
+        taxableValue + taxableValue * (taxPercent / 100) - taxableValue
+      );
     }
   }
   // calculating sub total
-  subtotal.value = parseFloat(taxable.value) + parseFloat(taxAmount.value);
+  subtotal.value = Float.decimals(
+    parseFloat(taxable.value) + parseFloat(taxAmount.value)
+  );
+};
+
+// upgraded
+
+//! 1. validation
+const validateInputs = (obj, deny = ["description"]) => {
+  var mainError = true;
+  Object.entries(obj).map((item) => {
+    if (empty(item[1]) && !deny.includes(item[0])) {
+      const errorEl = document.querySelector(`#${item[0]}`);
+      errorEl?.classList.add("validation-error");
+      mainError = false;
+      return true;
+    }
+  }); // converted error
+  return mainError;
+};
+
+/**
+ * clear generated Error messages
+ */
+const clearErrors = () => {
+  const errorEl = [...document.querySelectorAll(".validation-error")];
+  errorEl.forEach((item) => item?.classList.remove("validation-error"));
+};
+
+/**
+ * This function speaks for itself
+ */
+const generateCloseBtnOnEdit = (tr) => {
+  const closeBtn = document.createElement("button");
+  // class name
+  closeBtn.className = "btn btn-sm btn-outline-danger ms-2 col-1 clearButton";
+  // inner i tag
+  closeBtn.innerHTML = '<i class="fa fa-close"></i>';
+  // paren
+  const form = document.querySelector(".createFormRow");
+  form.appendChild(closeBtn);
+
+  // also an event to clear inputs
+  closeBtn.addEventListener("click", (event) => {
+    // ! make the menu as not being edited
+    tr.classList.remove("editing");
+    closeBtn.remove(); // remove the button itself
+    // clear the input fields
+    clearInputs();
+    getCategoryItems(); // refetch categories
+  });
+};
+
+/**
+ * Compares two elements
+ * @param {*} obj1 item to be compared with
+ * @param {*} obj2 item to comapre
+ * @param {*} compareArray compare only with
+ * @returns ``` bool ``` if the match found
+ */
+const compare = (obj1, obj2, compareArray, complete = false) => {
+  let tempArray = [];
+  // finding the similar items
+  Object.entries(obj2).map((item) => {
+    if (obj1.hasOwnProperty(item[0].toLocaleLowerCase())) {
+      // check if the value is same
+      obj1[item[0].toLocaleLowerCase()] === item[1]
+        ? tempArray.push(item[0])
+        : "";
+    }
+  });
+  // if has to compare all the items
+  const loopingArray = Boolean(complete)
+    ? [...Object.keys(obj1)]
+    : [...compareArray];
+
+  const check = loopingArray.map((item) => {
+    return tempArray.includes(item) ? true : false;
+  });
+
+  return !check.includes(false);
+};
+
+/**
+ * If the created element already lives append to it
+ * @param {*} obj
+ * @returns
+ */
+const appendItemToAlreadyAvailabeItem = (
+  element,
+  obj,
+  deleteItem = null,
+  confrim = true
+) => {
+  // confrim to update
+  const swalConfiguration = {
+    title: "Already Available",
+    text: "The product entered is already available, add to the product?",
+    type: "warning",
+    showCancelButton: true,
+    confirmButtonClass: "btn-outline-success",
+    confirmButtonText: "Update product",
+    closeOnConfirm: true,
+  };
+
+  if (!confrim) {
+    addToTwin(element, obj);
+    if (deleteItem) deleteItem.remove();
+
+    return true;
+  }
+
+  swal(swalConfiguration, () => {
+    addToTwin(element, obj);
+    if (deleteItem) deleteItem.remove();
+  });
+
+  // return main;
+  return true;
+};
+
+const getTableRows = () => {
+  return [...document.querySelector("#createTable").children];
+};
+
+// twin of creating data
+const isCreatingDataHasTwin = (
+  obj,
+  array = ["taxType", "taxPercentage", "productId"]
+) => {
+  const foundDuplicatedData = [...getTableRows()].filter((item) =>
+    compare(item.dataset, obj, array)
+  );
+  return first(foundDuplicatedData) || false;
+};
+
+// being editted data
+const beingEdittedData = () => {
+  const data = document.querySelector(".editing");
+  return data || false;
+};
+
+// editing data twin
+const isEditingDataHasTwin = (obj) => {
+  const foundDuplicatedData = [...getTableRows()].filter(
+    (item) =>
+      compare(item.dataset, obj, ["taxType", "taxPercentage", "productId"]) &&
+      !item.classList.contains("editing")
+  );
+  return first(foundDuplicatedData) || false;
+};
+
+// product change
+const productHasChanged = (obj) => {};
+
+const append = (data, deny = []) => {
+  // add values to inboxes when editted
+  Object.entries(data).map((item) => {
+    const el = document.querySelector("#" + item[0]); // object entries returns an array with two tiems
+    if (el && !deny.includes(item[0])) {
+      // changing the elements values
+      el.value = tr.getAttribute(`data-${item[0]}`);
+    }
+  });
+};
+
+const comfrimUpdate = () => {
+  return document.querySelector(".confrimUpdate").checked;
 };

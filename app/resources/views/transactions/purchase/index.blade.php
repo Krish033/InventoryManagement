@@ -1,6 +1,7 @@
 @extends('layouts.layout')
 @section('content')
 	<div class="container-fluid">
+
 		<div class="row">
 			<div class="col-sm-12">
 				<div class="row">
@@ -13,15 +14,9 @@
 										<h5>{{ $header }}</h5>
 									</div>
 									<div class="col-md-4 my-2 text-right text-md-right">
-										{{-- @if ($crud['restore'] == 1) --}}
-										<a class="btn  btn-outline-light btn-sm m-r-10" href="{{ route('purchase.trash') }}" type="button"> Trash view
-										</a>
-										{{-- @endif --}}
-										{{-- @if ($crud['add'] == 1) --}}
+										<a class="btn  btn-outline-dark btn-sm me-2" href="{{ route('purchase.trash') }}" type="button">Trash view</a>
 										<a class="btn  btn-outline-success btn-air-success btn-sm" href="{{ route('purchase.create') }}"
 											type="button">Create</a>
-										<!-- full-right -->
-										{{-- @endif --}}
 									</div>
 								</div>
 							</div>
@@ -32,12 +27,10 @@
 											<th class="text-center">Number</th>
 											<th class="text-center">Date</th>
 											<th class="text-center">Invoice Number</th>
-											<th class="text-center">supplier</th>
+											<th class="text-center">Supplier</th>
 											<th class="text-center">MOP</th>
-											<th class="text-center">taxable</th>
-											<th class="text-center">taxAmount</th>
-											<th class="text-center">paidAmount</th>
-											<th class="text-center">balanceAmount</th>
+											<th class="text-center">Taxable</th>
+											<th class="text-center">TaxAmount</th>
 											<th class="text-center">TotalAmount</th>
 											<th class="text-center">Actions</th>
 										</tr>
@@ -84,12 +77,20 @@
 						[10, 25, 50, 100, 250, 500, "All"]
 					],
 					columnDefs: [{
-							"className": "dt-center",
-							"targets": 2
+							targets: 2,
+							className: 'dt-body-center'
 						},
 						{
-							"className": "dt-center",
-							"targets": 3
+							targets: 5,
+							className: 'dt-body-right'
+						},
+						{
+							targets: 6,
+							className: 'dt-body-right'
+						},
+						{
+							targets: 7,
+							className: 'dt-body-right'
 						}
 					],
 					buttons: [
@@ -134,10 +135,9 @@
 						showCancelButton: true,
 						confirmButtonClass: "btn-outline-danger",
 						confirmButtonText: "Yes, Delete it!",
-						closeOnConfirm: false
+						closeOnConfirm: true
 					},
 					function() {
-						swal.close();
 						$.ajax({
 							type: "post",
 							url: "{{ url('/') }}/transactions/purchase/delete/" + id,
@@ -147,7 +147,6 @@
 							dataType: "json",
 							success: function(response) {
 								$('#tblpurchase').DataTable().ajax.reload();
-								swal.close();
 								if (response.status == true) {
 									$('#tblcustomer').DataTable().ajax.reload();
 									toastr.success(response.message, "Success")

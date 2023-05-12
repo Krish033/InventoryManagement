@@ -41,7 +41,9 @@ class customercontroller extends Controller {
 			return $next($request);
 		});
 	}
+
 	public function view(Request $req) {
+
 		if ($this->general->isCrudAllow($this->CRUD, "view") == true) {
 			$FormData = $this->general->UserInfo;
 			$FormData['menus'] = $this->Menus;
@@ -326,27 +328,27 @@ class customercontroller extends Controller {
 
 	public function Delete(Request $req, $CID) {
 		$OldData = $NewData = array();
-		if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
-			DB::beginTransaction();
-			$status = false;
-			try {
-				$OldData = DB::table('tbl_customer')->where('CID', $CID)->get();
-				$status = DB::table('tbl_customer')->where('CID', $CID)->update(array("DFlag" => 1, "DeletedBy" => $this->UserID, "DeletedOn" => date("Y-m-d H:i:s")));
-			} catch (Exception $e) {
+		// if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
+		DB::beginTransaction();
+		$status = false;
+		try {
+			$OldData = DB::table('tbl_customer')->where('CID', $CID)->get();
+			$status = DB::table('tbl_customer')->where('CID', $CID)->update(array("DFlag" => 1, "DeletedBy" => $this->UserID, "DeletedOn" => date("Y-m-d H:i:s")));
+		} catch (Exception $e) {
 
-			}
-			if ($status == true) {
-				DB::commit();
-				$logData = array("Description" => "customer has been Deleted ", "ModuleName" => "customer", "Action" => "Delete", "ReferID" => $CID, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
-				$this->logs->Store($logData);
-				return array('status' => true, 'message' => "customer Deleted Successfully");
-			} else {
-				DB::rollback();
-				return array('status' => false, 'message' => "customer Delete Failed");
-			}
-		} else {
-			return response(array('status' => false, 'message' => "Access Denied"), 403);
 		}
+		if ($status == true) {
+			DB::commit();
+			$logData = array("Description" => "customer has been Deleted ", "ModuleName" => "customer", "Action" => "Delete", "ReferID" => $CID, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
+			$this->logs->Store($logData);
+			return array('status' => true, 'message' => "customer Deleted Successfully");
+		} else {
+			DB::rollback();
+			return array('status' => false, 'message' => "customer Delete Failed");
+		}
+		// } else {
+		// 	return response(array('status' => false, 'message' => "Access Denied"), 403);
+		// }
 	}
 	public function Restore(Request $req, $CID) {
 		$OldData = $NewData = array();
@@ -378,7 +380,7 @@ class customercontroller extends Controller {
 		if ($this->general->isCrudAllow($this->CRUD, "view") == true) {
 			$ServerSideProcess = new ServerSideProcess();
 			$columns = array(
-				array('db' => 'CImg', 'dt' => '0'),
+				array('db' => 'CID', 'dt' => '0'),
 				array('db' => 'CName', 'dt' => '1'),
 				array('db' => 'MobileNumber', 'dt' => '2'),
 				array('db' => 'Email', 'dt' => '3'),
@@ -402,11 +404,11 @@ class customercontroller extends Controller {
 					'formatter' => function ($d, $row) {
 						$html = '';
 						if ($this->general->isCrudAllow($this->CRUD, "edit") == true) {
-							$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-success btn-sm -success mr-10 btnEdit" data-original-title="Edit"><i class="fa fa-pencil"></i></button>';
+							$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-success btn-sm me-2 btnEdit" data-original-title="Edit"><i class="fa fa-pencil"></i></button>';
 						}
-						if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
-							$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-danger btn-sm -success btnDelete" data-original-title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
-						}
+						// if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
+						$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-danger btn-sm btnDelete" data-original-title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+						// }
 						return $html;
 					}
 				)
@@ -429,7 +431,7 @@ class customercontroller extends Controller {
 		if ($this->general->isCrudAllow($this->CRUD, "view") == true) {
 			$ServerSideProcess = new ServerSideProcess();
 			$columns = array(
-				array('db' => 'CImg', 'dt' => '0'),
+				array('db' => 'CID', 'dt' => '0'),
 				array('db' => 'CName', 'dt' => '1'),
 				array('db' => 'MobileNumber', 'dt' => '2'),
 				array('db' => 'Email', 'dt' => '3'),

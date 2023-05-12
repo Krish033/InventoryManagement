@@ -7,7 +7,6 @@
 					<h5 id="CardHeader">{{ $header }}</h5>
 				</div>
 				<div class="card-body">
-
 					{{-- form startts --}}
 					<form id="supplierForm">
 						<div class="form-group mb-2">
@@ -59,7 +58,7 @@
 								<label for="address">HSN / SAC code</label>
 								<input
 									@if ($isEdit == true) value="{{ !is_null($EditData->hsn_sac_code) ? $EditData->hsn_sac_code : 0 }}" @endif
-									class="form-control" id="hsn_sac_code" placeholder="HSN / SAC code" type="number">
+									class="form-control" id="hsn_sac_code" placeholder="HSN / SAC code" type="text">
 							</div>
 							{{-- Max Quantity --}}
 							<div class="form-group col-md">
@@ -275,86 +274,59 @@
 				form.append(valid[0], valid[1]);
 			});
 
-			const hsn = $("#hsn_sac_code").val();
-
-			if (hsn != "" && hsn <= 99999) {
-				toastr.error("Please enter a valid HSN/SAC code");
-				return false;
-			}
-
 			form.append('hsn_sac_code', $("#hsn_sac_code").val())
 
-			$.ajax({ // Ajax form submit
-				type: "post",
-				url: submiturl, // Dynamic url
-				headers: { // CSRF
-					"X-CSRF-Token": $("meta[name=_token]").attr("content")
-				},
-				data: form,
-				processData: false,
-				contentType: false,
-				// prepare loaders
-				beforeSend: function() {
-					ajaxindicatorstart("Please wait Upload Process on going.");
-					var percentVal = "0%";
-					setTimeout(() => {
-						$("#divProcessText").html(
-							percentVal +
-							" Completed.<br> Please wait for until upload process complete."
-						);
-					}, 100);
-				}, // load function
-				xhr: function() {
-					var xhr = new window.XMLHttpRequest();
-					xhr.upload.addEventListener(
-						"progress",
-						function(evt) {
-							if (evt.lengthComputable) {
-								var percentComplete = (evt.loaded / evt.total) * 100;
-								percentComplete = parseFloat(percentComplete).toFixed(2);
-								$("#divProcessText").html(
-									percentComplete +
-									"% Completed.<br> Please wait for until upload process complete."
-								);
-							}
-						},
-						false
-					);
-					return xhr;
-				},
-				// Error
-				error: function(e, x, settings, exception) {
-					ajax_errors(e, x, settings, exception);
-					toastr.error('Failes', e.responseJSON?.message);
-				},
-				// Complete
-				complete: function(e, x, settings, exception) {
-					btnReset($("#btnSubmit"));
-					ajaxindicatorstop();
-				},
-				// Success
-				success: function(response) {
-					document.documentElement.scrollTop = 0;
-					if (response.status == true) {
-						swal({
-							title: "SUCCESS",
-							text: response.message,
-							type: "success",
+			const swalConfig = {
+				title: "Are you sure?",
+				text: "{{ $isEdit ? 'Update' : 'Create' }} Product?",
+				type: "info",
+				showCancelButton: true,
+				confirmButtonClass: "btn btn-outline-success",
+				confirmButtonText: "Confrim",
+				closeOnConfirm: true,
+			}
 
-							showCancelButton: false,
-							confirmButtonClass: "btn-outline-success",
-							confirmButtonText: "Okay",
-							closeOnConfirm: false,
-						}, function() {
-							@if ($isEdit == true)
-								window.location.replace("{{ url('/') }}/master/products");
-							@else
-								window.location.reload();
-								// [...document.querySelectorAll('input')].map(item => item.value = "");
-							@endif
-						});
-					}
-				},
+			swal(swalConfig, () => {
+				$.ajax({ // Ajax form submit
+					type: "post",
+					url: submiturl, // Dynamic url
+					headers: { // CSRF
+						"X-CSRF-Token": $("meta[name=_token]").attr("content")
+					},
+					data: form,
+					processData: false,
+					contentType: false,
+
+					// Error
+					error: function(e, x, settings, exception) {
+						ajax_errors(e, x, settings, exception);
+						toastr.error('Failes', e.responseJSON?.message);
+					},
+					// Success
+					success: function(response) {
+						document.documentElement.scrollTop = 0;
+						if (response.status == true) {
+							swal({
+								title: "SUCCESS",
+								text: response.message,
+								type: "success",
+
+								showCancelButton: false,
+								confirmButtonClass: "btn-outline-success",
+								confirmButtonText: "Okay",
+								closeOnConfirm: false,
+							}, function() {
+								@if ($isEdit == true)
+									window.location.replace(
+										"{{ url('/') }}/master/products");
+								@else
+									window.location.reload();
+									// [...document.querySelectorAll('input')].map(item => item.value = "");
+								@endif
+							});
+						}
+					},
+				});
 			});
 		});
 	</script>

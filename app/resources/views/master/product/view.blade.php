@@ -14,7 +14,7 @@
 									</div>
 									<div class="col-md-4 my-2 text-right text-md-right">
 										@if ($crud['restore'] == 1)
-											<a class="btn btn-outline-light btn-sm m-r-10" href="{{ route('product.trash') }}" type="button"> Trash view
+											<a class="btn btn-outline-dark btn-sm me-2" href="{{ route('product.trash') }}" type="button"> Trash view
 											</a>
 										@endif
 										@if ($crud['add'] == 1)
@@ -82,7 +82,7 @@
 								, {
 									extend: 'excel',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -93,7 +93,7 @@
 								, {
 									extend: 'copy',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -104,7 +104,7 @@
 								, {
 									extend: 'csv',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -115,7 +115,7 @@
 								, {
 									extend: 'print',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -126,7 +126,7 @@
 								, {
 									extend: 'pdf',
 									footer: true,
-									title: 'User Roles',
+									title: "{{ $header }}",
 									"action": DataTableExportOption,
 									exportOptions: {
 										columns: "thead th:not(.noExport)"
@@ -139,7 +139,7 @@
 			}
 			$(document).on('click', '.btnEdit', function() {
 				window.location.replace("{{ url('/') }}/master/suppliers/edit/" + $(this).attr(
-				'data-id'));
+					'data-id'));
 			});
 
 			$(document).on('click', '.btnDelete', function() {
@@ -154,7 +154,6 @@
 						closeOnConfirm: false
 					},
 					function() {
-						swal.close();
 						$.ajax({
 							type: "post",
 							url: "{{ url('/') }}/master/products/destory/" + ID,
@@ -163,24 +162,11 @@
 							},
 							dataType: "json",
 							success: function(response) {
-								swal.close();
 								if (response.status == true) {
 									$('#tblproducts').DataTable().ajax.reload();
-									toastr.success(response.message, "Success", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.success(response.message, "Success")
 								} else {
-									toastr.error(response.message, "Failed", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.error(response.message, "Failed")
 								}
 							}
 						});

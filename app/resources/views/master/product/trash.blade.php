@@ -13,7 +13,7 @@
 										<h5>{{ $header }}</h5>
 									</div>
 									<div class="col-md-4 my-2 text-right text-md-right">
-										<a class="btn  btn-outline-light btn-sm m-r-10" href="{{ url('/') }}/master/products"
+										<a class="btn btn-outline-dark btn-sm m-r-10" href="{{ url('/') }}/master/products"
 											type="button">Back</a>
 									</div>
 								</div>
@@ -152,37 +152,27 @@
 						closeOnConfirm: false
 					},
 					function() {
-						swal.close();
 						$.ajax({
+
 							type: "post",
 							url: "{{ url('/') }}/master/products/restore/" + ID,
+
 							headers: {
 								'X-CSRF-Token': $('meta[name=_token]').attr('content')
 							},
 							dataType: "json",
+
 							error: function(e, x, settings, exception) {
 								ajax_errors(e, x, settings, exception);
-								swal.close();
+								toastr.error(response.message, "Failed")
 							},
+
 							success: function(response) {
-								swal.close();
 								if (response.status == true) {
 									$('#tblproducts').DataTable().ajax.reload();
-									toastr.success(response.message, "Success", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.success(response.message, "Success")
 								} else {
-									toastr.error(response.message, "Failed", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.error(response.message, "Failed")
 								}
 							}
 						});

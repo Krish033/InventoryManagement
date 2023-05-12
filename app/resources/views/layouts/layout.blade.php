@@ -30,13 +30,11 @@
 	{{-- 
 	@ SweetAlert imports
 		--}}
-	<link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.5/sweetalert2.css"
-		integrity="sha512-yqCpLPABHnpDe3/QgEm1OO4Ohq0BBlBtJGMh5JbhdYEb6nahIm7sbtjilfSFyzUhxdXHS/cm8+FYfNstfpxcrg=="
-		referrerpolicy="no-referrer" rel="stylesheet" />
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.5/sweetalert2.min.js"
-		integrity="sha512-jt82OWotwBkVkh5JKtP573lNuKiPWjycJcDBtQJ3BkMTzu1dyu4ckGGFmDPxw/wgbKnX9kWeOn+06T41BeWitQ=="
-		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+	<link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.5/sweetalert2.min.css"
+		integrity="sha512-InYSgxgTnnt8BG3Yy0GcpSnorz5gxHvT6OEoRWj91Gg+RvNdCiAharnBe+XFIDS754Kd9TekdjXw3V7TAgh6Vw=="
+		referrerpolicy="no-referrer" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.5/sweetalert2.min.js"></script>
 	{{--
 	@ Bootstrap imports
 	--}}
@@ -67,7 +65,7 @@
 	{{-- 
 	@ Toastr imports
 		--}}
-	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.css" rel="stylesheet" />
 
 	{{--
@@ -75,6 +73,19 @@
 	--}}
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/Dropify/0.2.2/css/dropify.min.css" rel="stylesheet" />
 	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Dropify/0.2.2/js/dropify.js"></script>
+
+	{{--
+	@ Select2 imports
+	--}}
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<!-- Styles -->
+
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+	<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+		rel="stylesheet" />
+	<!-- Or for RTL support -->
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js"></script>
 
 	{{--
     @ Individual imports
@@ -94,6 +105,7 @@
 	<script defer src="{{ url('/') }}/Assets2/js/main.js"></script>
 	<script defer src="https://unpkg.com/alpinejs"></script>
 	<script defer src="{{ url('/') }}/Assets2/helpers.js"></script>
+	<script src="{{ url('/') }}/Assets2/http/main.js"></script>
 
 </head>
 
@@ -190,6 +202,8 @@
 
 	{{-- Scripts --}}
 	@yield('scripts')
+
+	<!-- Scripts -->
 
 </body>
 

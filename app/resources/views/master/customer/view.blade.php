@@ -14,22 +14,23 @@
 									</div>
 									<div class="col-md-4 my-2 text-right text-md-right">
 										@if ($crud['restore'] == 1)
-											<a class="btn  btn-outline-light btn-sm m-r-10" href="{{ url('/') }}/master/customer/trash-view"
-												type="button"> Trash view </a>
+											<a class="btn btn-outline-dark btn-sm me-2" href="{{ url('/') }}/master/customer/trash-view"
+												type="button">Trash view</a>
 										@endif
 										@if ($crud['add'] == 1)
-											<a class="btn  btn-outline-success btn-air-success btn-sm" href="{{ url('/') }}/master/customer/create"
+											<a class="btn btn-outline-success btn-air-success btn-sm" href="{{ url('/') }}/master/customer/create"
 												type="button">Create</a>
 											<!-- full-right -->
 										@endif
 									</div>
 								</div>
 							</div>
+
 							<div class="card-body ">
 								<table class="table" id="tblcustomer">
 									<thead>
 										<tr>
-											<th class="text-center">Profile</th>
+											<th class="text-center">Id</th>
 											<th class="text-center">Name</th>
 											<th class="text-center">Mobile</th>
 											<th class="text-center">Email</th>
@@ -66,9 +67,9 @@
 							},
 							"type": "POST"
 						},
-						deferRender: true,
-						responsive: true,
-						dom: 'Bfrtip',
+						"deferRender": true,
+						"responsive": true,
+						"dom": 'Bfrtip',
 						"iDisplayLength": 10,
 						"lengthMenu": [
 							[10, 25, 50, 100, 250, 500, -1],
@@ -132,11 +133,7 @@
 								}
 							@endif
 						],
-						columnDefs: [
-							// {"className": "dt-center", "targets":0},
-							// {"className": "dt-center", "targets":1},
-							// {"className": "dt-center", "targets":2},
-							{
+						columnDefs: [{
 								"className": "dt-center",
 								"targets": 3
 							},
@@ -164,7 +161,6 @@
 						closeOnConfirm: false
 					},
 					function() {
-						swal.close();
 						$.ajax({
 							type: "post",
 							url: "{{ url('/') }}/master/customer/delete/" + ID,
@@ -173,24 +169,11 @@
 							},
 							dataType: "json",
 							success: function(response) {
-								swal.close();
 								if (response.status == true) {
 									$('#tblcustomer').DataTable().ajax.reload();
-									toastr.success(response.message, "Success", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.success(response.message, "Success")
 								} else {
-									toastr.error(response.message, "Failed", {
-										positionClass: "toast-top-right",
-										containerId: "toast-top-right",
-										showMethod: "slideDown",
-										hideMethod: "slideUp",
-										progressBar: !0
-									})
+									toastr.error(response.message, "Failed")
 								}
 							}
 						});

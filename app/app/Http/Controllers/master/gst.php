@@ -209,27 +209,27 @@ class gst extends Controller {
 	public function Delete(Request $req, $CID) {
 
 		$OldData = $NewData = array();
-		if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
-			DB::beginTransaction();
-			$status = false;
-			try {
-				$OldData = DB::table('tbl_tax')->where('TaxID', $CID)->get();
-				$status = DB::table('tbl_tax')->where('TaxID', $CID)->update(array("DFlag" => 1, "DeletedBy" => $this->UserID, "DeletedOn" => date("Y-m-d H:i:s")));
-			} catch (Exception $e) {
+		// if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
+		DB::beginTransaction();
+		$status = false;
+		try {
+			$OldData = DB::table('tbl_tax')->where('TaxID', $CID)->get();
+			$status = DB::table('tbl_tax')->where('TaxID', $CID)->update(array("DFlag" => 1, "DeletedBy" => $this->UserID, "DeletedOn" => date("Y-m-d H:i:s")));
+		} catch (Exception $e) {
 
-			}
-			if ($status == true) {
-				DB::commit();
-				$logData = array("Description" => "Tax has been Deleted ", "ModuleName" => "Tax", "Action" => "Delete", "ReferID" => $CID, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
-				$this->logs->Store($logData);
-				return array('status' => true, 'message' => "Tax Deleted Successfully");
-			} else {
-				DB::rollback();
-				return array('status' => false, 'message' => "Tax Delete Failed");
-			}
-		} else {
-			return response(array('status' => false, 'message' => "Access Denied"), 403);
 		}
+		if ($status == true) {
+			DB::commit();
+			$logData = array("Description" => "Tax has been Deleted ", "ModuleName" => "Tax", "Action" => "Delete", "ReferID" => $CID, "OldData" => $OldData, "NewData" => $NewData, "UserID" => $this->UserID, "IP" => $req->ip());
+			$this->logs->Store($logData);
+			return array('status' => true, 'message' => "Tax Deleted Successfully");
+		} else {
+			DB::rollback();
+			return array('status' => false, 'message' => "Tax Delete Failed");
+		}
+		// } else {
+		// 	return response(array('status' => false, 'message' => "Access Denied"), 403);
+		// }
 	}
 	public function Restore(Request $req, $CID) {
 
@@ -280,12 +280,12 @@ class gst extends Controller {
 					'dt' => '4',
 					'formatter' => function ($d, $row) {
 						$html = '';
-						if ($this->general->isCrudAllow($this->CRUD, "edit") == true) {
-							$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-success btn-sm -success mr-10 btnEdit" data-original-title="Edit"><i class="fa fa-pencil"></i></button>';
-						}
-						if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
-							$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-danger btn-sm -success btnDelete" data-original-title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
-						}
+						// if ($this->general->isCrudAllow($this->CRUD, "edit") == true) {
+						$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-success btn-sm -success me-2 btnEdit" data-original-title="Edit"><i class="fa fa-pencil"></i></button>';
+						// }
+						// if ($this->general->isCrudAllow($this->CRUD, "delete") == true) {
+						$html .= '<button type="button" data-id="' . $d . '" class="btn  btn-outline-danger btn-sm -success btnDelete" data-original-title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+						// }
 						return $html;
 					}
 				)
