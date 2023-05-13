@@ -7,6 +7,14 @@ const tooltipList = [...tooltipTriggerList].map(
 );
 
 /**
+ * -----------------------------------------------------------
+ * ## Taxes@feelingPowerful
+ * -----------------------------------------------------------
+ * calculating tax was never easy before
+ */
+const Gst = new Tax();
+
+/**
  * update already existing items
  * @confrimUpdate
  * @default true
@@ -51,114 +59,6 @@ const defaultOption = () => {
   return defaultOption;
 };
 
-const totalAmount = (taxable, calculatedTaxAmount) => {
-  const subtotal = document.querySelector("#subtotal");
-  subtotal.classList.remove("disabled");
-  subtotal.value = parseFloat(taxable) + parseFloat(calculatedTaxAmount);
-};
-
-// get category records
-const requestCategories = () => {
-  // getting the tax
-  const ajaxConfiguration = {
-    method: "GET",
-    type: "GET",
-    url: "/transactions/api/purchase/requestCategory",
-  }; // main data
-  const data = request.http(ajaxConfiguration);
-  return data;
-};
-// get category records
-const requestSubCategories = (cid) => {
-  // getting the tax
-  const ajaxConfiguration = {
-    method: "GET",
-    url: "/transactions/api/purchase/request-subCategory/" + cid,
-  }; // main data
-
-  const data = request.http(ajaxConfiguration);
-  return data;
-};
-// get category products
-const requestProducts = (scId) => {
-  // getting the tax
-  const ajaxConfiguration = {
-    method: "GET",
-    type: "GET",
-    url: "/transactions/api/purchase/request-products/" + scId,
-  }; // main data
-
-  const data = request.http(ajaxConfiguration);
-  return data;
-};
-// get category products
-const requestSingleProducts = (pid) => {
-  // getting the tax
-  const ajaxConfiguration = {
-    method: "GET",
-    type: "GET",
-    url: "/transactions/api/purchase/request-single-products/" + pid,
-  }; // main data
-
-  const data = request.http(ajaxConfiguration);
-  return data;
-};
-
-// get category products
-const requestTaxes = () => {
-  // getting the tax
-  const ajaxConfiguration = {
-    method: "GET",
-    type: "GET",
-    url: "/transactions/api/purchase/requestTax",
-  }; // main data
-
-  const data = request.http(ajaxConfiguration);
-  return data;
-};
-
-// get category products
-const requestSuppliers = () => {
-  // getting the tax
-  const ajaxConfiguration = {
-    method: "GET",
-    type: "GET",
-    url: "/transactions/api/purchase/request-suppliers",
-  }; // main data
-
-  const data = request.http(ajaxConfiguration);
-  return data;
-};
-
-const validateFunction = (nodeList) => {
-  let validatedArray = {};
-
-  let error = false;
-  const subNodeList = [...nodeList];
-
-  subNodeList.map((item) => {
-    if (empty(item.value)) {
-      if (item.id != "description") {
-        item.classList.add("validation-error");
-        error = true;
-        return;
-      }
-    }
-
-    validatedArray = {
-      ...validatedArray,
-      [item.id]: item.value,
-    };
-  });
-
-  if (error) {
-    toastr.error("All fields are required");
-    return false;
-  }
-
-  return validatedArray;
-};
-
 const clearInputs = (subNodeList = getClearables()) => {
   subNodeList.map(async (item) => {
     if (item instanceof HTMLSelectElement) {
@@ -180,27 +80,10 @@ const getCategoryItems = async () => {
   return data;
 };
 
-const genepriceGrandTotal = () => {
-  const subtotal = requestTotalTax() + requestTotalInfo();
-  document.querySelector("#grandTotal").textContent = currency.format(subtotal);
-  return subtotal;
-};
-
-const requestTotalTax = () => {
-  const totalElement = [
-    ...[...document.querySelectorAll("[data-tax-subtotal-element]")].map(
-      (subtotal) => {
-        const parent = subtotal.parentElement;
-        return parseFloat(parent.dataset.taxamount);
-      }
-    ),
-  ];
-
-  const sum = totalElement.reduce((partialSum, a) => partialSum + a, 0);
-  document.querySelector("#taxTotal").textContent = currency.format(sum);
-  return sum;
-};
-
+/**
+ * Disable main items
+ * @param {*} array
+ */
 const disableInputs = (array = []) => {
   const disabled = [
     "quantity",
@@ -218,6 +101,10 @@ const disableInputs = (array = []) => {
   });
 };
 
+/**
+ * Disable items
+ * @param {*} disabled ID list
+ */
 const disable = (disabled = []) => {
   [...disabled].forEach((item) => {
     if (document.querySelector("#" + item) !== null) {
@@ -226,6 +113,10 @@ const disable = (disabled = []) => {
   });
 };
 
+/**
+ * Enable disabled items
+ * @param {*} disabled
+ */
 const enable = (disabled = []) => {
   [...disabled].forEach((main) => {
     const item = document.querySelector("#" + main);
@@ -235,23 +126,10 @@ const enable = (disabled = []) => {
   });
 };
 
-const requestTotalInfo = () => {
-  const totalElement = [
-    ...document.querySelectorAll("[data-subtotal-element]"),
-  ].map((subtotal) => {
-    const parent = subtotal.parentElement;
-    return parseFloat(parent.dataset.taxable);
-  });
-
-  const sum = totalElement.reduce((partialSum, a) => partialSum + a, 0);
-  document.querySelector("#totalSum").textContent = currency.format(sum);
-  return sum;
-};
-
-const requestValidatedArray = () => {
-  return validateFunction(getClearables());
-};
-
+/**
+ * Get all inputs from form
+ * @returns DOMElementNodeList
+ */
 const getClearables = () => {
   const validateObject = document.querySelector("#createForm");
 
@@ -261,49 +139,12 @@ const getClearables = () => {
   ];
 };
 
-const hasTwin = (obj) => {
-  const parentNode = document.querySelector("#createTable");
-  const twin = parentNode.children;
-
-  // object has product id
-  const mainTwin = parentNode.querySelector(
-    `[data-productId='${obj.productId}']`
-  );
-
-  const beingEdited = document.querySelector(".editing");
-
-  let found = false;
-  [...twin].map((item) => {
-    if (
-      mainTwin != null &&
-      item.dataset.taxtype === obj.taxType &&
-      item.dataset.taxpercentage == obj.taxPercentage
-    ) {
-      found = true;
-    }
-  });
-
-  return found;
-};
-
-const getItem = (obj) => {
-  const parentNode = document.querySelector("#createTable");
-  const twin = parentNode.children;
-
-  const main = [];
-
-  [...twin].map((item) => {
-    if (
-      item.dataset.taxtype === obj.taxType &&
-      item.dataset.taxpercentage == obj.taxPercentage
-    ) {
-      main.push(item);
-    }
-  });
-
-  return main[0];
-};
-
+/**
+ * Non reusable -> add items to elements
+ * @param {*} twin
+ * @param {*} obj
+ * @returns
+ */
 const addToTwin = (twin, obj) => {
   // quantity
   twin.querySelector("#item-quantity").innerText =
@@ -344,12 +185,15 @@ const addToTwin = (twin, obj) => {
   twin.setAttribute("data-description", obj?.description);
 
   clearInputs();
-
   getCategoryItems();
-  genepriceGrandTotal();
   return true;
 };
 
+/**
+ * Non reusable Creating element for DOM -> tr
+ * @param {*} obj
+ * @returns
+ */
 const createDOMElement = async (obj) => {
   const parentNode = document.querySelector("#createTable");
 
@@ -371,6 +215,7 @@ const createDOMElement = async (obj) => {
   tr.setAttribute("data-taxAmount", obj.taxAmount);
   tr.setAttribute("data-subtotal", obj.subtotal);
   parentNode.appendChild(tr);
+
   // category
   const category = document.createElement("td");
   category.textContent = obj?.category;
@@ -461,22 +306,15 @@ const createDOMElement = async (obj) => {
 
     swal(swalConfiguration, () => {
       tr.remove();
-      genepriceGrandTotal();
     });
   });
 
   edit.addEventListener("click", (e) => appendEditValues(e, obj, tr));
 
-  genepriceGrandTotal();
   clearInputs();
   getCategoryItems();
 
   return true;
-};
-
-const requestItemsFromLocalStorage = () => {
-  const data = JSON.parse(localStorage.getItem("main"));
-  createDOMElement(data);
 };
 
 const clearSelectInputs = (exclude = []) => {
@@ -504,10 +342,10 @@ const clearSelectInputs = (exclude = []) => {
   return true;
 };
 
-const calculateTaxAmount = (amount, taxPercentage) => {
-  return (parseFloat(amount) * parseFloat(taxPercentage)) / 100;
-};
-
+/**
+ * Imporatnt function -> update values
+ * @returns
+ */
 const updateEverything = () => {
   // updatable values
   const quantity = document.querySelector("#quantity"),
@@ -517,57 +355,77 @@ const updateEverything = () => {
     taxable = document.querySelector("#taxable"),
     taxAmount = document.querySelector("#taxAmount"),
     subtotal = document.querySelector("#subtotal");
-  // quantity change
 
+  // quantity value
   const quantityValue = parseFloat(quantity.value);
-  if (isNaN(quantityValue)) return false;
+  // finding if quantity has to do something
+  if (isNaN(quantityValue)) {
+    clearTaxValues();
+    return false;
+  }
 
+  if (quantityValue < 1) {
+    clearTaxValues(true);
+    return false;
+  }
+
+  // main rate value
   const rateValue = parseFloat(rate.value);
+  // find if rate has something to offer
+  if (isNaN(rateValue)) {
+    clearTaxValues(true);
+    return false;
+  }
+  // tax percentage
   const taxPercent = parseFloat(taxPercentage.value);
-  // get values
-  taxable.value = quantityValue * rateValue;
-  const taxableValue = parseFloat(taxable.value);
-  // calcualte tax amount
-  taxAmount.value = calculateTaxAmount(
-    taxableValue,
-    isNaN(taxPercent) ? 0.0 : taxPercent
-  );
+  // Finding if tax owe us something
+  if (isNaN(taxPercent)) {
+    clearTaxValues(true);
+    return false;
+  }
 
+  const subTaxable = rateValue * quantityValue; // 2500
   // dont calculate tax if excluded
   if (taxtype.value == "include") {
-    if (!isNaN(taxPercent)) {
-      //formula
-      // @ GSTCalculatedTotalAmount * (100 / (100 + taxPercent))
-      const GSTCalculatedTotalAmount = calculateTaxAmount(
-        taxable.value,
-        taxPercent
-      ); // GSTCalculatedTotalAmount
+    // get Includes tax
+    const { taxAmount: mainTaxAmount, taxable: mainTaxableValue } =
+      Gst.GstIncludes(subTaxable, taxPercent);
 
-      const main = GSTCalculatedTotalAmount * (100 / (100 + taxPercent));
-      const subTaxable = rateValue * quantityValue; // 2500
-      taxable.value = Float.decimals(subTaxable - main);
-      taxAmount.value = Float.decimals(main);
-    }
+    taxable.value = Float.decimals(mainTaxableValue);
+    taxAmount.value = Float.decimals(mainTaxAmount);
+
+    subtotal.value = Float.decimals(mainTaxAmount + mainTaxableValue);
+    return;
   }
 
   if (taxtype.value == "exclude") {
-    if (!isNaN(taxPercent)) {
-      // formula
-      // @ taxableValue + taxableValue * (taxPercent / 100) - taxableValue
-      taxAmount.value = Float.decimals(
-        taxableValue + taxableValue * (taxPercent / 100) - taxableValue
-      );
-    }
+    // formula
+    const { taxAmount: excludesTaxAmount, taxable: excludesTaxable } =
+      Gst.GstExcludes(subTaxable, taxPercent);
+
+    taxable.value = Float.decimals(subTaxable);
+    taxAmount.value = Float.decimals(excludesTaxAmount);
+
+    subtotal.value = Float.decimals(subTaxable + excludesTaxAmount);
+    return;
   }
-  // calculating sub total
-  subtotal.value = Float.decimals(
-    parseFloat(taxable.value) + parseFloat(taxAmount.value)
-  );
 };
 
-// upgraded
+const clearTaxValues = (
+  zeros = false,
+  accepts = ["taxable", "taxAmount", "subtotal"],
+  deny = []
+) => {
+  [...accepts].map((item) => {
+    const el = document.querySelector("#" + item);
+    if (el && !deny.includes(item)) el.value = zeros ? 0.0 : null;
+    return;
+  });
 
-//! 1. validation
+  return true;
+};
+
+// validation
 const validateInputs = (obj, deny = ["description"]) => {
   var mainError = true;
   Object.entries(obj).map((item) => {
@@ -639,7 +497,7 @@ const compare = (obj1, obj2, compareArray, complete = false) => {
   const check = loopingArray.map((item) => {
     return tempArray.includes(item) ? true : false;
   });
-
+  // boolean return
   return !check.includes(false);
 };
 
@@ -665,13 +523,14 @@ const appendItemToAlreadyAvailabeItem = (
     closeOnConfirm: true,
   };
 
+  // checking weather to ask for confrimation or not
   if (!confrim) {
     addToTwin(element, obj);
     if (deleteItem) deleteItem.remove();
-
+    // main
     return true;
   }
-
+  // confrim
   swal(swalConfiguration, () => {
     addToTwin(element, obj);
     if (deleteItem) deleteItem.remove();
@@ -680,12 +539,20 @@ const appendItemToAlreadyAvailabeItem = (
   // return main;
   return true;
 };
-
+/**
+ * Get table rows from element
+ * @returns
+ */
 const getTableRows = () => {
   return [...document.querySelector("#createTable").children];
 };
 
-// twin of creating data
+/**
+ * Find the Already existing twin
+ * @param {*} obj
+ * @param {*} array
+ * @returns
+ */
 const isCreatingDataHasTwin = (
   obj,
   array = ["taxType", "taxPercentage", "productId"]
@@ -696,7 +563,10 @@ const isCreatingDataHasTwin = (
   return first(foundDuplicatedData) || false;
 };
 
-// being editted data
+/**
+ * Data being editted
+ * @returns data | bool
+ */
 const beingEdittedData = () => {
   const data = document.querySelector(".editing");
   return data || false;
@@ -710,22 +580,4 @@ const isEditingDataHasTwin = (obj) => {
       !item.classList.contains("editing")
   );
   return first(foundDuplicatedData) || false;
-};
-
-// product change
-const productHasChanged = (obj) => {};
-
-const append = (data, deny = []) => {
-  // add values to inboxes when editted
-  Object.entries(data).map((item) => {
-    const el = document.querySelector("#" + item[0]); // object entries returns an array with two tiems
-    if (el && !deny.includes(item[0])) {
-      // changing the elements values
-      el.value = tr.getAttribute(`data-${item[0]}`);
-    }
-  });
-};
-
-const comfrimUpdate = () => {
-  return document.querySelector(".confrimUpdate").checked;
 };

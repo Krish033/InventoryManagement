@@ -204,6 +204,9 @@
 						<button class="btn btn-sm btn-outline-primary" id="createPurchaseItemForm">
 							<i class="fa fa-check"></i> <span class="ms-1">Create</span>
 						</button>
+
+						<input id="main-taxable" type="hidden">
+						<input id="main-taxamount" type="hidden">
 					</div>
 					<p class="notice d-block small text-info"></p>
 					<hr />
@@ -256,17 +259,19 @@
 			</div>
 		</div>
 	</div>
-	@endsection @section('scripts')
+@endsection
+@section('scripts')
 	{{-- main scripts --}}
-	<script src="{{ url('/') }}/Assets2/custom/purchase.js"></script>
+	<script src="{{ url('/') }}/Assets2/custom/purchase/requests.js"></script>
+	<script src="{{ url('/') }}/Assets2/custom/purchase/purchase.js"></script>
 
 	<script>
 		// main request configuartion
 		const request = createHttpRequest("{{ url('/') }}");
+
 		// ! loading categories
 		$(document).ready(async () => {
 
-			updateEverything()
 			//getting and appending categories
 			const {
 				data,
@@ -282,7 +287,7 @@
 			createSelectOption(categoryId, data, 'CID', 'CName')
 		});
 
-		// fetch subcategoriws when category value changes
+		// fetch subcategories when category value changes
 		$('#categoryId').change(async function(e) {
 			updateEverything()
 			clearSelectInputs(['categoryId'])
@@ -302,6 +307,7 @@
 			createSelectOption(subCategoryId, data, 'SCID', 'SCName')
 		});
 
+		// fetch products when subcategory change
 		$('#subCategoryId').change(async function(e) {
 			updateEverything()
 			clearSelectInputs(['categoryId', 'subCategoryId']);
@@ -400,14 +406,9 @@
 				updateEverything()
 				return true;
 			}
-
 			updateEverything()
-
 			document.querySelector('#price').value = data?.purchaseRate;
 		});
-
-
-		// run update everything when
 
 		// quantity changes 
 		$(document).on('input', '#quantity', async function(e) {
@@ -471,6 +472,13 @@
 				return false;
 			}
 
+			// validation
+			if (parseFloat(mainValidated.quantity) < 1) {
+				toastr.error("Quantity cannot be empty", "Validation Error");
+				updateEverything()
+				return false;
+			}
+
 			// clearing the error elements
 			clearErrors()
 			updateEverything()
@@ -496,7 +504,6 @@
 				if (document.querySelector('.editing')) {
 					document.querySelector('.editing').classList.remove('.editing');
 				}
-
 				return true
 			}
 
@@ -515,7 +522,6 @@
 				if (document.querySelector('.editing')) {
 					document.querySelector('.editing').classList.remove('.editing');
 				}
-
 
 				return true;
 			}
@@ -556,13 +562,15 @@
 		const appendEditValues = async (e, row, tr) => {
 			// clearing the error elements
 			clearErrors()
+
 			// if only has clear button
 			if (!document.querySelector('.clearButton')) {
 				generateCloseBtnOnEdit(tr);
 			}
 
-			tr.classList.add("editing");
+			updateEverything();
 
+			tr.classList.add("editing");
 			// add values to inboxes when editted
 			Object.entries(row).map((item) => {
 				const el = document.querySelector("#" + item[
@@ -571,14 +579,12 @@
 					el.value = tr.getAttribute(`data-${item[0]}`);
 				}
 			});
-
 			// getting and appending categories
 			const {
 				data,
 				isError
 			} = await requestCategories();
 			const categoryId = document.querySelector("#categoryId");
-
 
 			// caheck error and create error
 			if (isError) return toastr.error("Something went wrong!", "Failed");
@@ -618,14 +624,10 @@
 			const taxSelect = document.querySelector('#taxPercentage');
 			createSelectOption(taxSelect, taxData, 'TaxPercentage', 'TaxName', tr.dataset.taxpercentage)
 
-
-			genepriceGrandTotal();
 			return true;
 		};
 
-		// grandTotal price
-		genepriceGrandTotal();
-
+		// get suppliers
 		$(document).ready(async () => {
 			//getting and appending categories
 			const {
@@ -641,6 +643,7 @@
 				@endif )
 		})
 
+		// create purchase
 		$(document).on('click', '#createPurchase', async (e) => {
 			const swalConfiguration = {
 				title: "Are you sure?",
@@ -651,6 +654,7 @@
 				confirmButtonText: "Confrim",
 				closeOnConfirm: true
 			}
+
 			e.preventDefault();
 			// get values
 			let products = [...document.querySelector('#createTable').children].map(item => {
@@ -658,7 +662,9 @@
 			}); // return return account
 			products = products.map(item => {
 
-				const denyList = ['category', 'subCategory', 'product'];
+				const denyList = ['category', 'subCategory', 'product', 'mainTaxableInput',
+					'mainTaxAmountInput'
+				];
 				let obj = {};
 				Object.entries(item).map(data => {
 					if (!denyList.includes(item[0])) {
@@ -687,20 +693,22 @@
 			} // bundle
 
 			// getting the amount of taxable and taxAmount values by calculating it
-			const taxableCalcuation = requestTotalInfo();
-			const taxAmountCalcuation = requestTotalTax();
+			const {
+				taxamount,
+				taxable,
+				total,
+			} = getMainTotals();
 
 			const mainData = {
 				...validated,
 				invoiceNo: $('#ivNo').val(),
-				taxable: taxableCalcuation,
-				taxAmount: taxAmountCalcuation,
-				TotalAmount: parseFloat(taxableCalcuation) + parseFloat(taxAmountCalcuation),
+				taxable,
+				taxAmount,
+				TotalAmount: total,
 				paidAmount: 0,
-				balanceAmount: parseFloat(taxableCalcuation) + parseFloat(taxAmountCalcuation),
+				balanceAmount: total,
 				products,
 			}
-
 
 			// send ajax request to post the data
 			const url =
@@ -726,6 +734,7 @@
 			});
 		});
 
+		// main data being edited
 		@if ($isEdit)
 
 			const requestCreatedNodes = () => {
