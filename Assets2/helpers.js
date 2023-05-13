@@ -175,7 +175,6 @@ class Append {
       if (this.selects && element instanceof HTMLSelectElement) {
         element.value == item[1];
         element.selected = item[1].toLocaleLowerCase();
-        console.log(element.value);
         // element.selected = element.value == item[1];
       }
     });
@@ -225,6 +224,11 @@ class Append {
     return true;
   }
 
+  /**
+   * Updates an elements dataset
+   * @param {*} object
+   * @returns
+   */
   update(object) {
     if (!this.datasets) {
       throw new ReferenceError("Cannot add to Empty Dataset");
@@ -279,6 +283,41 @@ class Append {
   }
 }
 
+/**
+ * Helper to get an insatance of Append
+ * @param {*} parent
+ * @returns
+ */
 const createAppend = (parent) => {
   return new Append(parent);
+};
+
+/**
+ * Compares two elements
+ * @param {*} obj1 item to be compared with
+ * @param {*} obj2 item to comapre
+ * @param {*} compareArray compare only with
+ * @returns ``` bool ``` if the match found
+ */
+const compare = (obj1, obj2, compareArray, complete = false) => {
+  let tempArray = [];
+  // finding the similar items
+  Object.entries(obj2).map((item) => {
+    if (obj1.hasOwnProperty(item[0].toLocaleLowerCase())) {
+      // check if the value is same
+      obj1[item[0].toLocaleLowerCase()] === item[1]
+        ? tempArray.push(item[0])
+        : "";
+    }
+  });
+  // if has to compare all the items
+  const loopingArray = Boolean(complete)
+    ? [...Object.keys(obj1)]
+    : [...compareArray];
+
+  const check = loopingArray.map((item) => {
+    return tempArray.includes(item) ? true : false;
+  });
+  // boolean return
+  return !check.includes(false);
 };

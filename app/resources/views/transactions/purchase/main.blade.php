@@ -264,368 +264,16 @@
 	{{-- main scripts --}}
 	<script src="{{ url('/') }}/Assets2/custom/purchase/requests.js"></script>
 	<script src="{{ url('/') }}/Assets2/custom/purchase/purchase.js"></script>
+	<script src="{{ url('/') }}/Assets2/custom/purchase/createPurchase.js"></script>
+	<script src="{{ url('/') }}/Assets2/custom/purchase/updatePurchase.js"></script>
+
+	<script src="{{ url('/') }}/Assets2/custom/purchase/tax.js"></script>
+	<script src="{{ url('/') }}/Assets2/custom/purchase/helpers.js"></script>
+	<script src="{{ url('/') }}/Assets2/custom/purchase/validation.js"></script>
 
 	<script>
 		// main request configuartion
 		const request = createHttpRequest("{{ url('/') }}");
-
-		// ! loading categories
-		$(document).ready(async () => {
-
-			//getting and appending categories
-			const {
-				data,
-				isError
-			} = await requestCategories();
-
-			updateEverything()
-
-			const categoryId = document.querySelector('#categoryId');
-			$('select:not(#taxType, #taxPercentage)').select2();
-			// caheck error and create error
-			if (isError) return toastr.error("Something went wrong!", 'Failed');
-			createSelectOption(categoryId, data, 'CID', 'CName')
-		});
-
-		// fetch subcategories when category value changes
-		$('#categoryId').change(async function(e) {
-			updateEverything()
-			clearSelectInputs(['categoryId'])
-			// clear subcategories
-			const subCategoryId = document.querySelector('#subCategoryId');
-			$('.notice').html('')
-			enable(['taxType', 'taxPercentage']);
-
-			const {
-				data,
-				isError
-			} = await requestSubCategories(e.target.value);
-
-			if (isError) return toastr.error("Something went wrong!", 'Failed');
-
-			subCategoryId.classList.remove('disabled');
-			createSelectOption(subCategoryId, data, 'SCID', 'SCName')
-		});
-
-		// fetch products when subcategory change
-		$('#subCategoryId').change(async function(e) {
-			updateEverything()
-			clearSelectInputs(['categoryId', 'subCategoryId']);
-			$('.notice').html('')
-			enable(['taxType', 'taxPercentage']);
-			// clear subcategories
-			const productId = document.querySelector('#productId');
-			const {
-				data,
-				isError
-			} = await requestProducts(e.target.value);
-
-			if (isError) return toastr.error("Something went wrong!", 'Failed');
-			// getting sub categories purchase.subcategory
-			productId.classList.remove('disabled');
-
-			createSelectOption(productId, data, 'pid', 'name')
-		});
-
-
-		// clear subcategories
-		$('#productId').change(async function(e) {
-
-			clearSelectInputs(['categoryId', 'subCategoryId', 'productId']);
-			updateEverything()
-
-			$('.notice').html('')
-			enable(['taxType', 'taxPercentage']);
-			updateEverything()
-
-			// check for duplicates
-			const productId = document.querySelector('#productId');
-
-			const duplicate = isCreatingDataHasTwin({
-				productId: productId.value,
-			}, ["productId"]); // dom element
-
-			if (duplicate) {
-				toastr.info("Appending to it", "Item already availabe");
-			}
-
-			// getting a single product -> only if duplicate not found
-			const {
-				data,
-				isError
-			} = await requestSingleProducts(e.target.value);
-			if (isError) return toastr.error("Something went wrong!", 'Failed');
-
-
-			//getting and appending tax values
-			const {
-				data: taxData,
-				isError: isTaxError
-			} = await requestTaxes();
-
-			if (isTaxError) return toastr.error("Something went wrong!", 'Failed');
-
-			const taxSelect = document.querySelector('#taxPercentage');
-			createSelectOption(taxSelect, taxData, 'TaxPercentage', 'TaxName', data?.taxId)
-
-
-			// disable quantity
-			const quantity = document.querySelector('#quantity');
-			quantity.classList.remove('disabled');
-
-			if (duplicate) {
-				// got main values
-				const dataset = duplicate.dataset;
-
-				const notice = document.querySelector('.notice');
-
-				if (!confrimUpdate) {
-					$('.notice').html(
-						"<i class=\"fa-solid fa-circle-exclamation\"></i> This product will be automatically added to the already existing product"
-					)
-				}
-
-				// generate object without categoryId subCategoryId, productId
-				const objectData = Arr
-					.object(dataset)
-					.except(['categoryId', 'subCategoryId', 'productId', 'quantity', 'taxAmount', 'taxable',
-						'subtotal'
-					])
-					.get()
-
-				// got the items append it on screen
-				const parentNode = document.querySelector('#createForm');
-
-				const append = createAppend(parentNode);
-
-				append.includesSelect()
-					.ids(objectData)
-					.create()
-
-				disable(['taxType', 'taxPercentage']);
-				updateEverything()
-				return true;
-			}
-			updateEverything()
-			document.querySelector('#price').value = data?.purchaseRate;
-		});
-
-		// quantity changes 
-		$(document).on('input', '#quantity', async function(e) {
-			updateEverything();
-			return true;
-		});
-
-		// taxtype changes 
-		$('#taxType').change(async function(e) {
-			updateEverything();
-		});
-
-		// percentage changes
-		$('#taxPercentage').change(async function(e) {
-			updateEverything();
-		});
-
-		// submit records
-		$(document).on('click', '#createPurchaseItemForm', async (e) => {
-
-			// todo: get product
-			e.preventDefault();
-			enable(['taxType', 'taxPercentage']);
-			$('.notice').html('')
-			updateEverything()
-
-			// getting text values 
-			const category = document.querySelector('#categoryId')
-			const subcategory = document.querySelector('#subCategoryId')
-			const product = document.querySelector('#productId')
-
-			const categoryName = category.options[category.selectedIndex].text;
-			const subCategoryName = subcategory.options[subcategory.selectedIndex].text;
-			const productName = product.options[product.selectedIndex].text;
-
-			// data, editted and created data uses the same mainValidated
-			const mainValidated = {
-				category: categoryName,
-				categoryId: category.value,
-				subCategory: subCategoryName,
-
-				subCategoryId: subcategory.value,
-				product: productName,
-				productId: product.value,
-
-				quantity: $('#quantity').val(),
-				price: $('#price').val(),
-				taxType: $('#taxType').val(),
-				description: $('#description').val(),
-				taxPercentage: $('#taxPercentage').val(),
-				taxable: $('#taxable').val(),
-				taxAmount: $('#taxAmount').val(),
-
-				subtotal: $('#subtotal').val(),
-			}
-
-			// validation
-			if (!validateInputs(mainValidated)) {
-				toastr.error("Please fill in all fields", "Validation Error");
-				updateEverything()
-				return false;
-			}
-
-			// validation
-			if (parseFloat(mainValidated.quantity) < 1) {
-				toastr.error("Quantity cannot be empty", "Validation Error");
-				updateEverything()
-				return false;
-			}
-
-			// clearing the error elements
-			clearErrors()
-			updateEverything()
-
-			if (document.querySelector('.clearButton')) {
-				document.querySelector('.clearButton').remove()
-			}
-
-			// todo: check if product is being edited
-			// get editted data
-			const originalDataBeingEditted = beingEdittedData();
-
-			// todo: if being edited, check if edited data has twin
-			const editingDuplicateData = beingEdittedData() ? isEditingDataHasTwin(mainValidated) : false;
-			// find twin, which is not original item
-			if (Boolean(editingDuplicateData)) { // is being editted and found a duplicate
-
-				updateEverything()
-				// add data to the duplicated
-				const beingEdittedDataForDeletion = beingEdittedData();
-				appendItemToAlreadyAvailabeItem(editingDuplicateData, mainValidated, beingEdittedDataForDeletion)
-
-				if (document.querySelector('.editing')) {
-					document.querySelector('.editing').classList.remove('.editing');
-				}
-				return true
-			}
-
-			// todo: if edited data doesnot have a twin
-			if (originalDataBeingEditted) {
-				updateEverything()
-				// remove original data
-				originalDataBeingEditted.remove();
-				// insert new data
-				createDOMElement({
-					...mainValidated
-				});
-
-				enable(['taxType', 'taxPercentage']);
-
-				if (document.querySelector('.editing')) {
-					document.querySelector('.editing').classList.remove('.editing');
-				}
-
-				return true;
-			}
-
-			// todo: if not being edited, check if the product has twin
-			const notBeingEditedDuplicate = isCreatingDataHasTwin(mainValidated);
-
-			// alreadyExists -> not being editted
-			if (notBeingEditedDuplicate) {
-				// add data to the twin
-				appendItemToAlreadyAvailabeItem(notBeingEditedDuplicate, mainValidated, null, confrimUpdate);
-				enable(['taxType', 'taxPercentage']);
-
-				if (document.querySelector('.editing')) {
-					document.querySelector('.editing').classList.remove('.editing');
-				}
-				return true;
-			} // add product to twin
-
-
-			// todo: does not have twin,
-
-			updateEverything()
-			createDOMElement({
-				...mainValidated
-			});
-
-			if (document.querySelector('.editing')) {
-				document.querySelector('.editing').classList.remove('.editing');
-			}
-
-			enable(['taxType', 'taxPercentage']);
-			return true;
-			// crate product
-		});
-
-		// append vlues while editing
-		const appendEditValues = async (e, row, tr) => {
-			// clearing the error elements
-			clearErrors()
-
-			// if only has clear button
-			if (!document.querySelector('.clearButton')) {
-				generateCloseBtnOnEdit(tr);
-			}
-
-			updateEverything();
-
-			tr.classList.add("editing");
-			// add values to inboxes when editted
-			Object.entries(row).map((item) => {
-				const el = document.querySelector("#" + item[
-					0]); // object entries returns an array with two tiems
-				if (el) { // changing the elements values
-					el.value = tr.getAttribute(`data-${item[0]}`);
-				}
-			});
-			// getting and appending categories
-			const {
-				data,
-				isError
-			} = await requestCategories();
-			const categoryId = document.querySelector("#categoryId");
-
-			// caheck error and create error
-			if (isError) return toastr.error("Something went wrong!", "Failed");
-			createSelectOption(categoryId, data, "CID", "CName", tr.dataset.categoryid);
-
-			const subCategoryId = document.querySelector('#subCategoryId');
-			// getting sub categories purchase.subcategory
-			const {
-				data: sub,
-				isError: subError,
-				error
-			} = await requestSubCategories(tr.dataset.categoryid);
-			if (subError) return toastr.error("Something went wrong!", 'Failed');
-
-			subCategoryId.classList.remove('disabled');
-			createSelectOption(subCategoryId, sub, 'SCID', 'SCName', tr.dataset.subcategoryid)
-
-			const productId = document.querySelector('#productId');
-			const {
-				data: product,
-				isError: productError
-			} = await requestProducts(tr.dataset.subcategoryid);
-			if (productError) return toastr.error("Something went wrong!", 'Failed');
-			// getting sub categories purchase.subcategory
-			productId.classList.remove('disabled');
-			createSelectOption(productId, product, 'pid', 'name', tr.dataset.productid)
-			const quantity = document.querySelector('#quantity');
-			quantity.classList.remove('disabled');
-
-			//getting and appending categories
-			const {
-				data: taxData,
-				isError: isTaxError
-			} = await requestTaxes();
-
-			if (isTaxError) return toastr.error("Something went wrong!", 'Failed');
-			const taxSelect = document.querySelector('#taxPercentage');
-			createSelectOption(taxSelect, taxData, 'TaxPercentage', 'TaxName', tr.dataset.taxpercentage)
-
-			return true;
-		};
 
 		// get suppliers
 		$(document).ready(async () => {
@@ -634,7 +282,6 @@
 				data: suppliers,
 				isError
 			} = await requestSuppliers();
-
 
 			const supplierSelect = document.querySelector('#supplierId');
 			createSelectOption(supplierSelect, suppliers, 'sid', 'name',
@@ -668,7 +315,6 @@
 				let obj = {};
 				Object.entries(item).map(data => {
 					if (!denyList.includes(item[0])) {
-
 						obj = {
 							...obj,
 							[data[0]]: data[1]
@@ -677,6 +323,7 @@
 				}); // main object
 				return obj;
 			}); // validation
+
 			const validated = {
 				tranDate: $('#tranDate').val(),
 				supplierId: $('#supplierId').val(),
@@ -719,6 +366,7 @@
 				@endif
 
 			swal(swalConfiguration, async function() {
+
 				const {
 					data,
 					isError
@@ -736,7 +384,6 @@
 
 		// main data being edited
 		@if ($isEdit)
-
 			const requestCreatedNodes = () => {
 				const tranId = "{{ $EditData->tranNo }}";
 				return request.http({
@@ -744,7 +391,6 @@
 					method: "GET",
 				});
 			};
-
 			$(document).ready(async () => {
 				const {
 					data,
